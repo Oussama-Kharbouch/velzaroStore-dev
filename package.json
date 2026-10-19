@@ -1,0 +1,48 @@
+{
+  "name": "velzaro-store",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=20.9.0"
+  },
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "drizzle-kit migrate",
+    "db:seed": "node scripts/db-seed.mjs",
+    "db:import": "node scripts/db-import.mjs",
+    "db:export": "node scripts/db-export.mjs",
+    "db:studio": "drizzle-kit studio",
+    "images:r2": "tsx scripts/upload-images-to-r2.ts"
+  },
+  "dependencies": {
+    "@aws-sdk/client-s3": "3.1141.0",
+    "@neon/config": "^1.9.2",
+    "@neon/env": "^1.6.3",
+    "drizzle-orm": "0.45.2",
+    "lucide-react": "1.31.0",
+    "next": "16.3.8",
+    "pg": "8.16.3",
+    "react": "19.2.6",
+    "react-dom": "19.2.6",
+    "server-only": "0.0.1",
+    "sharp": "0.35.5",
+    "zod": "3.25.76"
+  },
+  "devDependencies": {
+    "@types/node": "22.19.19",
+    "@types/pg": "8.15.5",
+    "@types/react": "19.2.14",
+    "@types/react-dom": "19.2.3",
+    "drizzle-kit": "0.31.10",
+    "eslint": "9.39.4",
+    "eslint-config-next": "16.3.8",
+    "tsx": "4.23.15",
+    "typescript": "5.9.3"
+  }
+}

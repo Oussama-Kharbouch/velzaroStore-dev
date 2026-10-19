@@ -1,0 +1,4 @@
+import type { Metadata } from "next";
+export const metadata: Metadata = {title:"VELZARO.store — Le style à chaque pas",description:"Découvrez la sélection de sneakers VELZARO. Commandez simplement avec paiement à la livraison."};
+// Root layout shared by the shop and the dashboard; each group loads its own styles.
+export default function RootLayout({children}:{children:React.ReactNode}){return <html lang="fr"><body>{children}</body></html>}

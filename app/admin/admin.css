@@ -1,0 +1,844 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Playfair+Display:wght@400;500;600&display=swap');
+
+/* ---------------------------------------------------------------------------
+   Dashboard VELZARO (/ALLAH).
+
+   Ossature reprise du dashboard Deco Prestigea, aux couleurs de VELZARO :
+   menu lateral noir, accent or (#b99a69), actions principales noires,
+   DM Sans pour le texte et Playfair Display pour les titres, comme le site.
+
+   Tout est prefixe ad- : aucune regle ne peut fuir vers la boutique, qui ne
+   charge d'ailleurs pas cette feuille (groupe de routes separe).
+   --------------------------------------------------------------------------- */
+
+.ad {
+  --ad-shell: #f7f6f3;
+  --ad-panel: #fff;
+  --ad-sidebar: #111;
+  --ad-sidebar-soft: #232323;
+  --ad-champagne: #d6bc90;
+  --ad-text: #161616;
+  --ad-muted: #777;
+  --ad-line: #e7e5e1;
+  --ad-radius: 12px;
+  --ad-sidebar-width: 264px;
+
+  /* Couleurs de marque VELZARO (noms gardes du dashboard d'origine). */
+  --gold: #b99a69;
+  --orange: #111;
+
+  --ad-green: #2f7d5d;
+  --ad-amber: #b3761f;
+  --ad-red: #b3261e;
+  --ad-slate: #6b6257;
+
+  min-height: 100vh;
+  background: var(--ad-shell);
+  color: var(--ad-text);
+  font-family: "DM Sans", Arial, sans-serif;
+  font-size: 14px;
+}
+
+.ad *,
+.ad *::before,
+.ad *::after { box-sizing: border-box; }
+
+/*
+ * Base resets the dashboard used to inherit from the shop stylesheet, which it no
+ * longer loads. :where() keeps them at zero specificity: .ad-btn and co. still win.
+ */
+:where(.ad) a { color: inherit; text-decoration: none; }
+:where(.ad) button { border: 0; background: none; color: inherit; font: inherit; cursor: pointer; }
+:where(.ad) input, :where(.ad) select, :where(.ad) textarea { font: inherit; color: inherit; }
+:where(.ad) img { display: block; max-width: 100%; }
+body:has(.ad) { margin: 0; }
+
+.ad h1, .ad h2, .ad h3 {
+  font-family: "Playfair Display", Georgia, serif;
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  margin: 0;
+}
+
+/* --- Ossature ------------------------------------------------------------ */
+
+.ad-shell { display: flex; min-height: 100vh; }
+
+.ad-main {
+  display: flex;
+  min-width: 0;          /* sans quoi les tableaux larges poussent la colonne */
+  flex: 1;
+  flex-direction: column;
+}
+
+.ad-content { padding: 26px clamp(18px, 2.6vw, 34px) 60px; }
+
+/* --- Menu lateral -------------------------------------------------------- */
+
+.ad-sidebar {
+  position: sticky;
+  top: 0;
+  display: flex;
+  width: var(--ad-sidebar-width);
+  height: 100vh;
+  flex-direction: column;
+  flex-shrink: 0;
+  background: var(--ad-sidebar);
+  color: #f2f2f2;
+}
+
+.ad-sidebar-brand {
+  display: flex;
+  height: 84px;
+  align-items: center;
+  gap: 12px;
+  padding: 0 22px;
+  border-bottom: 1px solid rgba(233, 215, 184, 0.16);
+}
+
+.ad-sidebar-brand img { width: 132px; }
+
+.ad-sidebar-tag {
+  display: block;
+  margin-top: 3px;
+  color: var(--ad-champagne);
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.26em;
+  text-transform: uppercase;
+}
+
+.ad-nav {
+  display: flex;
+  overflow-y: auto;
+  flex: 1;
+  flex-direction: column;
+  gap: 3px;
+  padding: 20px 14px;
+}
+
+.ad-nav-label {
+  padding: 16px 10px 7px;
+  color: rgba(233, 215, 184, 0.5);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+}
+
+.ad-nav a {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 11px 12px;
+  border-radius: 8px;
+  color: #dcdcdc;
+  font-size: 13.5px;
+  transition: background 0.18s ease, color 0.18s ease;
+}
+
+.ad-nav a svg { width: 17px; flex-shrink: 0; stroke-width: 1.6; }
+.ad-nav a:hover { background: var(--ad-sidebar-soft); color: #fff; }
+
+.ad-nav a.active {
+  background: rgba(185, 154, 105, 0.22);
+  box-shadow: inset 3px 0 0 var(--gold);
+  color: #fff;
+  font-weight: 600;
+}
+
+/* Compteur a droite d'une entree (commandes en attente, etc.). */
+.ad-nav-count {
+  min-width: 20px;
+  margin-left: auto;
+  padding: 2px 6px;
+  border-radius: 999px;
+  background: rgba(233, 215, 184, 0.18);
+  font-size: 11px;
+  text-align: center;
+}
+
+.ad-nav a.active .ad-nav-count { background: rgba(255, 255, 255, 0.24); }
+
+.ad-sidebar-foot {
+  padding: 16px;
+  border-top: 1px solid rgba(233, 215, 184, 0.16);
+}
+
+.ad-sidebar-foot a,
+.ad-sidebar-foot button {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  color: #dcdcdc;
+  font-family: inherit;
+  font-size: 13px;
+  text-align: left;
+  transition: background 0.18s ease;
+}
+
+.ad-sidebar-foot a:hover,
+.ad-sidebar-foot button:hover { background: var(--ad-sidebar-soft); color: #fff; }
+.ad-sidebar-foot svg { width: 16px; stroke-width: 1.6; }
+
+/* --- En-tete ------------------------------------------------------------- */
+
+.ad-header {
+  position: sticky;
+  top: 0;
+  z-index: 15;
+  display: flex;
+  min-height: 84px;
+  align-items: center;
+  gap: 18px;
+  padding: 14px clamp(18px, 2.6vw, 34px);
+  border-bottom: 1px solid var(--ad-line);
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(8px);
+}
+
+.ad-burger {
+  display: none;
+  width: 40px;
+  height: 40px;
+  border: 1px solid var(--ad-line);
+  border-radius: 9px;
+  background: #fff;
+  color: var(--ad-text);
+  place-items: center;
+}
+
+.ad-burger svg { width: 19px; }
+
+.ad-header-titles { min-width: 0; flex: 1; }
+
+.ad-header-titles p {
+  margin: 0 0 3px;
+  color: var(--gold);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+}
+
+.ad-header-titles h1 { font-size: clamp(22px, 2.4vw, 31px); }
+
+.ad-header-actions { display: flex; align-items: center; gap: 10px; }
+
+/* --- Boutons ------------------------------------------------------------- */
+
+.ad-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 16px;
+  border: 1px solid var(--ad-line);
+  border-radius: 8px;
+  background: #fff;
+  color: var(--ad-text);
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  white-space: nowrap;
+  transition: background 0.18s ease, border-color 0.18s ease, color 0.18s ease, transform 0.18s ease;
+}
+
+.ad-btn svg { width: 16px; flex-shrink: 0; stroke-width: 1.7; }
+.ad-btn:hover { border-color: var(--gold); }
+.ad-btn:disabled { cursor: not-allowed; opacity: 0.55; }
+
+.ad-btn-primary {
+  border-color: var(--orange);
+  background: var(--orange);
+  color: #fff;
+}
+
+.ad-btn-primary:hover:not(:disabled) {
+  border-color: #333;
+  background: #333;
+  transform: translateY(-1px);
+}
+
+.ad-btn-ghost { border-color: transparent; background: transparent; }
+.ad-btn-ghost:hover { border-color: var(--ad-line); background: #fff; }
+
+/* --- Cartes de statistiques ---------------------------------------------- */
+
+.ad-stats {
+  display: grid;
+  gap: 16px;
+  grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+}
+
+.ad-stat {
+  position: relative;
+  overflow: hidden;
+  padding: 20px;
+  border: 1px solid var(--ad-line);
+  border-radius: var(--ad-radius);
+  background: var(--ad-panel);
+  box-shadow: 0 1px 2px rgba(63, 31, 11, 0.04);
+}
+
+/* Filet de couleur a gauche : repere la famille d'indicateur d'un coup d'oeil. */
+.ad-stat::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 3px;
+  background: var(--ad-stat-accent, var(--gold));
+}
+
+.ad-stat-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.ad-stat-head span {
+  color: var(--ad-muted);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.ad-stat-icon {
+  display: grid;
+  width: 34px;
+  height: 34px;
+  flex-shrink: 0;
+  border-radius: 9px;
+  background: color-mix(in srgb, var(--ad-stat-accent, var(--gold)) 13%, #fff);
+  color: var(--ad-stat-accent, var(--gold));
+  place-items: center;
+}
+
+.ad-stat-icon svg { width: 17px; stroke-width: 1.7; }
+
+.ad-stat strong {
+  display: block;
+  font-family: "Playfair Display", Georgia, serif;
+  font-size: 34px;
+  font-weight: 500;
+  line-height: 1;
+}
+
+.ad-stat small {
+  display: block;
+  margin-top: 8px;
+  color: var(--ad-muted);
+  font-size: 12px;
+}
+
+/* --- Panneaux ------------------------------------------------------------ */
+
+.ad-grid {
+  display: grid;
+  gap: 18px;
+  margin-top: 22px;
+}
+
+.ad-grid-2 { grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr); }
+
+.ad-panel {
+  overflow: hidden;
+  border: 1px solid var(--ad-line);
+  border-radius: var(--ad-radius);
+  background: var(--ad-panel);
+}
+
+.ad-panel-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 17px 20px;
+  border-bottom: 1px solid var(--ad-line);
+}
+
+.ad-panel-head h2 { font-size: 20px; }
+
+.ad-panel-head p {
+  margin: 3px 0 0;
+  color: var(--ad-muted);
+  font-size: 12px;
+}
+
+.ad-panel-body { padding: 20px; }
+
+/* --- Tableaux ------------------------------------------------------------ */
+
+.ad-table-scroll { overflow-x: auto; }
+
+.ad-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+
+.ad-table th {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--ad-line);
+  background: #faf6f0;
+  color: var(--ad-muted);
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-align: left;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.ad-table td {
+  padding: 13px 16px;
+  border-bottom: 1px solid #f4ece1;
+  vertical-align: middle;
+}
+
+.ad-table tbody tr:last-child td { border-bottom: 0; }
+.ad-table tbody tr:hover { background: #fdfaf5; }
+.ad-table .ad-num { text-align: right; font-variant-numeric: tabular-nums; }
+
+/* Cellule produit : vignette + nom + reference. */
+
+.ad-cell-actions { display: flex; justify-content: flex-end; gap: 6px; }
+
+/* --- Pastilles ----------------------------------------------------------- */
+
+/* Stock : la couleur porte l'alerte, le nombre reste lisible. */
+.ad-stock { font-variant-numeric: tabular-nums; font-weight: 600; }
+.ad-stock-out { color: var(--ad-red); }
+.ad-stock-low { color: var(--ad-amber); }
+.ad-stock-ok { color: var(--ad-green); }
+
+/* --- Barre de filtres ---------------------------------------------------- */
+
+.ad-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--ad-line);
+  background: #fff;
+  flex-wrap: wrap;
+}
+
+.ad-search {
+  position: relative;
+  min-width: 220px;
+  flex: 1;
+}
+
+.ad-search > svg {
+  position: absolute;
+  top: 50%;
+  left: 14px;
+  width: 16px;
+  color: var(--ad-muted);
+  pointer-events: none;
+  transform: translateY(-50%);
+}
+
+.ad-search input {
+  width: 100%;
+  padding: 11px 38px 11px 40px;
+  border: 1px solid var(--ad-line);
+  border-radius: 8px;
+  background: #fff;
+  color: var(--ad-text);
+  font-family: inherit;
+  font-size: 13px;
+}
+
+.ad-search input:focus-visible { border-color: var(--gold); outline: 0; }
+.ad-search input::placeholder { color: #b0a294; }
+
+.ad-search > button {
+  position: absolute;
+  top: 50%;
+  right: 10px;
+  display: grid;
+  width: 24px;
+  height: 24px;
+  color: var(--ad-muted);
+  place-items: center;
+  transform: translateY(-50%);
+}
+
+.ad-search > button svg { width: 14px; }
+.ad-search > button:hover { color: var(--orange); }
+
+.ad-select {
+  padding: 11px 12px;
+  border: 1px solid var(--ad-line);
+  border-radius: 8px;
+  background: #fff;
+  color: var(--ad-text);
+  font-family: inherit;
+  font-size: 13px;
+}
+
+.ad-select:focus-visible { border-color: var(--gold); outline: 0; }
+
+.ad-count { color: var(--ad-muted); font-size: 12.5px; }
+.ad-count strong { color: var(--ad-text); }
+
+/* --- Formulaires --------------------------------------------------------- */
+
+.ad-form { display: flex; flex-direction: column; gap: 18px; }
+
+.ad-field { display: flex; flex-direction: column; gap: 7px; }
+
+.ad-field > label {
+  color: var(--ad-text);
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.ad-field > label b { color: var(--orange); font-weight: 600; }
+
+/* Libelle porteur d'une icone (« Alerte produit »). */
+.ad-field > label { display: inline-flex; align-items: center; gap: 6px; }
+.ad-field > label svg { width: 14px; height: 14px; color: var(--ad-amber); }
+
+.ad-field input,
+.ad-field select,
+.ad-field textarea {
+  width: 100%;
+  padding: 11px 13px;
+  border: 1px solid var(--ad-line);
+  border-radius: 8px;
+  background: #fff;
+  color: var(--ad-text);
+  font-family: inherit;
+  font-size: 13.5px;
+}
+
+.ad-field textarea { min-height: 116px; line-height: 1.6; resize: vertical; }
+
+.ad-field input:focus-visible,
+.ad-field select:focus-visible,
+.ad-field textarea:focus-visible { border-color: var(--gold); outline: 0; }
+
+/* Sous-titre d'un champ compose (titre puis texte de l'alerte produit). */
+
+/* Caracteristiques libres : nom, valeur, et les boutons d'ordre au bout. */
+
+/* Barre de mise en forme de la description : memes boutons que partout. */
+
+/* La pastille de couleur se glisse dans le bouton, sans le deformer. */
+
+/* Liste deroulante avec recherche (matiere d'un produit). Le champ garde le
+   style des autres ; seule la liste des propositions s'ajoute dessous. */
+
+/* Le panneau rogne son contenu (coins arrondis) : pendant que la liste est
+   ouverte, il la laisse depasser. Son en-tete n'a pas de fond, rien ne change. */
+
+.ad-field-error { color: var(--ad-red); font-size: 11.5px; font-weight: 500; }
+.ad-field.invalid input,
+.ad-field.invalid select,
+.ad-field.invalid textarea { border-color: var(--ad-red); }
+
+/* Listes editables : images et couleurs d'un produit. */
+
+/* Formats et packs d'un produit : une carte par format, photo a gauche. */
+
+/* --- Messages ------------------------------------------------------------ */
+
+.ad-alert {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 13px 15px;
+  border: 1px solid;
+  border-radius: 9px;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.ad-alert svg { width: 17px; flex-shrink: 0; margin-top: 1px; }
+.ad-alert-error { border-color: #eccecb; background: #fdf1f0; color: var(--ad-red); }
+.ad-alert-success { border-color: #cfe5da; background: #f0f8f4; color: var(--ad-green); }
+.ad-alert-info { border-color: #e6d9c2; background: #fdf8f0; color: #7a5a22; }
+
+.ad-empty {
+  padding: 54px 24px;
+  color: var(--ad-muted);
+  text-align: center;
+}
+
+.ad-empty svg { width: 34px; margin-bottom: 12px; color: #cbbba9; stroke-width: 1.4; }
+.ad-empty strong { display: block; margin-bottom: 6px; color: var(--ad-text); font-size: 15px; }
+.ad-empty p { max-width: 380px; margin: 0 auto; font-size: 13px; line-height: 1.6; }
+
+/* --- Repartition du catalogue -------------------------------------------- */
+
+.ad-bars { display: flex; flex-direction: column; gap: 14px; }
+
+.ad-bar-line {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 6px;
+  font-size: 12.5px;
+}
+
+.ad-bar-line span { color: var(--ad-text); }
+.ad-bar-line strong { color: var(--ad-muted); font-weight: 600; }
+
+.ad-bar-track {
+  overflow: hidden;
+  height: 7px;
+  border-radius: 4px;
+  background: #f2e8db;
+}
+
+.ad-bar-fill {
+  height: 100%;
+  border-radius: 4px;
+  background: linear-gradient(90deg, #d6bc90, var(--gold));
+}
+
+/* --- Fiche produit / commande -------------------------------------------- */
+
+.ad-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  margin-bottom: 14px;
+  color: var(--ad-muted);
+  font-size: 13px;
+}
+
+.ad-back svg { width: 15px; }
+.ad-back:hover { color: var(--orange); }
+
+/* --- Connexion ----------------------------------------------------------- */
+
+.ad-login {
+  display: grid;
+  min-height: 100vh;
+  padding: 24px;
+  background: radial-gradient(circle at 20% 15%, #3c2416 0%, #241308 58%, #1b0e06 100%);
+  place-items: center;
+}
+
+.ad-login-card {
+  width: min(410px, 100%);
+  padding: 38px 34px 32px;
+  border: 1px solid rgba(233, 215, 184, 0.2);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.97);
+  box-shadow: 0 30px 70px rgba(15, 7, 2, 0.45);
+}
+
+.ad-login-card img { width: 150px; margin: 0 auto 22px; }
+
+.ad-login-card h1 { margin-bottom: 6px; font-size: 27px; text-align: center; }
+
+.ad-login-card > p {
+  margin: 0 0 24px;
+  color: var(--ad-muted);
+  font-size: 13px;
+  line-height: 1.6;
+  text-align: center;
+}
+
+.ad-login-card .ad-btn { width: 100%; padding: 13px; }
+
+/* --- Responsive ---------------------------------------------------------- */
+
+@media (max-width: 1180px) {
+  .ad-grid-2 { grid-template-columns: minmax(0, 1fr); }
+  
+}
+
+@media (max-width: 1023px) {
+  /* Le menu quitte le flux et glisse par-dessus le contenu. */
+  .ad-sidebar {
+    position: fixed;
+    z-index: 60;
+    left: 0;
+    transform: translateX(-100%);
+    transition: transform 0.28s ease;
+  }
+
+  .ad-sidebar.open { transform: translateX(0); box-shadow: 0 0 60px rgba(15, 7, 2, 0.45); }
+
+  .ad-burger { display: grid; }
+
+  .ad-backdrop {
+    position: fixed;
+    z-index: 50;
+    background: rgba(24, 12, 5, 0.5);
+    inset: 0;
+  }
+}
+
+@media (max-width: 720px) {
+  .ad-content { padding: 18px 16px 48px; }
+  .ad-header { min-height: 72px; padding: 12px 16px; gap: 12px; }
+  .ad-stats { grid-template-columns: repeat(auto-fit, minmax(154px, 1fr)); gap: 12px; }
+  .ad-stat { padding: 16px; }
+  .ad-stat strong { font-size: 27px; }
+  .ad-toolbar { padding: 14px 16px; }
+  .ad-search { min-width: 100%; }
+  .ad-select { flex: 1; }
+  .ad-panel-body { padding: 16px; }
+
+  /* Les libelles d'action encombrent : on ne garde que les icones. */
+  .ad-header-actions .ad-btn span { display: none; }
+  .ad-header-actions .ad-btn { padding: 10px; }
+}
+
+@media (max-width: 560px) {
+  .ad-stats { grid-template-columns: 1fr 1fr; }
+  
+  .ad-table th, .ad-table td { padding: 11px 12px; }
+}
+
+/* Le site public reste imprimable ; le dashboard, lui, n'a pas a l'etre. */
+@media print {
+  .ad-sidebar, .ad-header-actions, .ad-cell-actions { display: none; }
+}
+
+/* Indicateur d'attente des boutons qui declenchent une requete. */
+@keyframes ad-spin { to { transform: rotate(360deg); } }
+.ad-spin { animation: ad-spin 0.9s linear infinite; }
+
+@media (prefers-reduced-motion: reduce) {
+  .ad-spin { animation-duration: 3s; }
+  .ad-sidebar { transition: none; }
+}
+
+/* --- Fenetre modale ------------------------------------------------------ */
+
+/* --- Galerie editable ----------------------------------------------------- */
+
+/* Une ligne = un champ d'image televersable + ses fleches de reordonnancement.
+   Le champ occupe toute la largeur restante ; les fleches restent alignees en
+   haut, car le champ grandit quand il affiche une erreur ou une aide. */
+
+/* Un champ d'image en erreur se signale comme les autres champs du formulaire. */
+.invalid > .ad-field input { border-color: var(--ad-red); }
+
+/* --- Champ de televersement ---------------------------------------------- */
+
+/* Le libelle n'est plus un <label> : il n'y a plus de champ texte a associer,
+   la vignette et le bouton portent leur propre intitule accessible. */
+
+/* La vignette EST un bouton : cliquer l'image la remplace, ce qui est le geste
+   attendu et evite d'avoir a viser le bouton a cote. */
+
+/* Voile pendant l'envoi : l'ancienne image reste visible dessous. */
+
+/* Une ligne de galerie : le champ d'image prend la largeur, les fleches suivent. */
+
+/* --- VELZARO : logo texte, catalogue, pastilles -------------------------- */
+
+.ad-logo { display: block; color: #fff; font-family: Georgia, serif; font-size: 23px; letter-spacing: 5px; }
+.ad-logo small { display: block; padding-top: 5px; color: var(--gold); font: 9px Arial, sans-serif; letter-spacing: 5px; }
+.ad-logo-dark { margin-bottom: 18px; color: var(--ad-text); text-align: center; }
+.ad-sub { color: var(--ad-muted); font-size: 11.5px; }
+.ad-stock-none { color: var(--ad-muted); }
+
+.vz-swatch { display: inline-block; width: 12px; height: 12px; margin-inline-end: 8px; border: 1px solid #0002; border-radius: 50%; vertical-align: -1px; }
+.vz-inline-icon { width: 15px; height: 15px; margin-inline-end: 8px; color: var(--ad-muted); vertical-align: -2px; }
+
+.vz-variants { display: grid; grid-template-columns: repeat(auto-fill, minmax(min(100%, 520px), 1fr)); gap: 16px; }
+.vz-variant { display: flex; flex-direction: column; }
+.vz-variant.is-hidden { background: #fafafa; }
+.vz-variant.is-hidden .vz-variant-photo img { opacity: .45; filter: grayscale(1); }
+.vz-variant-head { display: flex; align-items: center; gap: 14px; padding: 16px 18px; border-bottom: 1px solid var(--ad-line); }
+.vz-variant-photo { display: flex; width: 74px; height: 56px; flex: none; align-items: center; justify-content: center; overflow: hidden; border-radius: 8px; background: #f3f3f1; }
+.vz-variant-photo img { width: 100%; height: 100%; object-fit: contain; }
+.vz-variant-title { min-width: 0; flex: 1; }
+.vz-variant-title h2 { font-size: 19px; }
+.vz-variant-title p { margin: 4px 0 0; color: var(--ad-muted); font-size: 12px; }
+.vz-variant-title a { color: inherit; }
+.vz-toggle { display: inline-flex; align-items: center; gap: 7px; padding: 7px 12px; border: 1px solid var(--ad-line); border-radius: 999px; background: #f1efec; color: #6b6257; font: 600 12.5px "DM Sans", Arial, sans-serif; cursor: pointer; }
+.vz-toggle svg { width: 15px; height: 15px; }
+.vz-toggle.is-on { border-color: #c9ead6; background: #eaf7ef; color: #1f8a4c; }
+.vz-variant-body { display: grid; gap: 14px; padding: 16px 18px; }
+.vz-prices { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.vz-stocks { margin: 0; padding: 0; border: 0; }
+.vz-stocks small { color: var(--ad-muted); font-weight: 400; }
+.vz-stock-grid { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 8px; margin-top: 8px; }
+.vz-stock { display: grid; justify-items: center; gap: 5px; padding: 8px 6px; border: 1px solid var(--ad-line); border-radius: 8px; }
+.vz-stock > span:first-child { font-weight: 700; }
+.vz-stock input { width: 100%; padding: 6px; border: 1px solid var(--ad-line); border-radius: 6px; font: inherit; text-align: center; }
+.vz-stock input:focus-visible { border-color: var(--gold); outline: 0; }
+.vz-variant-foot { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin-top: auto; padding: 14px 18px; border-top: 1px solid var(--ad-line); }
+.vz-variant-foot .ad-btn { margin-inline-start: auto; }
+.vz-variant-current { color: var(--ad-muted); font-size: 12.5px; }
+.vz-variant-current strong { color: var(--ad-text); }
+.vz-saved { color: #1f8a4c; font-size: 12.5px; font-weight: 600; }
+
+@media (max-width: 600px) {
+  .vz-prices { grid-template-columns: 1fr; }
+  .vz-stock-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+
+/* --- VELZARO : produits et fiche coloris ---------------------------------- */
+
+.vz-product { display: flex; align-items: center; gap: 16px; padding: 18px 20px; }
+.vz-product h2 { font-size: 24px; }
+.vz-product p { margin: 4px 0 0; color: var(--ad-muted); font-size: 13px; }
+.vz-product .vz-product-eyebrow { margin: 0; color: var(--gold); font-size: 10px; font-weight: 700; letter-spacing: .2em; text-transform: uppercase; }
+
+.vz-order { display: inline-flex; gap: 4px; }
+.vz-order button { display: inline-flex; width: 30px; height: 30px; align-items: center; justify-content: center; border: 1px solid var(--ad-line); border-radius: 8px; color: var(--ad-muted); }
+.vz-order button:hover:not(:disabled) { border-color: var(--gold); color: var(--ad-text); }
+.vz-order button:disabled { opacity: .35; cursor: default; }
+.vz-order svg { width: 15px; height: 15px; }
+
+.vz-warn, .vz-ok { display: inline-flex; align-items: center; gap: 4px; margin-inline-start: 8px; font-size: 12px; font-weight: 600; font-family: "DM Sans", Arial, sans-serif; }
+.vz-warn { color: #b8690f; }
+.vz-ok { color: #1f8a4c; }
+.vz-warn svg { width: 13px; height: 13px; }
+.vz-hint { color: var(--ad-muted); font-size: 12.5px; }
+
+.vz-form { display: grid; gap: 16px; }
+.vz-form-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px 18px; padding: 18px 20px; }
+.vz-form-grid .ad-field input { width: 100%; }
+.vz-color { display: flex; gap: 8px; }
+.vz-color input[type=color] { width: 46px; height: 42px; flex: none; padding: 3px; border: 1px solid var(--ad-line); border-radius: 8px; background: #fff; cursor: pointer; }
+.vz-color input:not([type=color]) { flex: 1; }
+
+.vz-photos { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 12px; padding: 18px 20px; }
+.vz-photo { display: grid; gap: 7px; align-content: start; }
+.vz-photo-preview { position: relative; display: flex; aspect-ratio: 1; align-items: center; justify-content: center; overflow: hidden; border: 1.5px dashed #cfcac1; border-radius: 10px; background: #faf9f6; color: var(--ad-muted); }
+.vz-photo.is-filled .vz-photo-preview { border-style: solid; border-color: var(--ad-line); background: #f3f3f1; }
+.vz-photo-preview:hover:not(:disabled) { border-color: var(--gold); }
+.vz-photo-preview:disabled { cursor: not-allowed; opacity: .55; }
+.vz-photo-preview img { width: 100%; height: 100%; object-fit: contain; }
+.vz-photo-preview > svg { width: 26px; height: 26px; }
+.vz-photo-busy { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; background: #fffc; }
+.vz-photo-role { color: var(--ad-muted); font-size: 11.5px; line-height: 1.35; }
+.vz-photo-role b { color: var(--ad-text); }
+.vz-photo-actions { display: flex; justify-content: space-between; gap: 4px; }
+.vz-photo-actions button { display: inline-flex; flex: 1; height: 28px; align-items: center; justify-content: center; border: 1px solid var(--ad-line); border-radius: 7px; color: var(--ad-muted); }
+.vz-photo-actions button:hover:not(:disabled) { border-color: var(--gold); color: var(--ad-text); }
+.vz-photo-actions button:disabled { opacity: .35; cursor: default; }
+.vz-photo-actions svg { width: 14px; height: 14px; }
+
+.vz-form-foot { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; padding: 4px 0 20px; }
+.vz-form-foot .ad-btn-primary { margin-inline-start: auto; }
+.vz-form-foot .ord-btn.vz-delete { width: auto; }
+
+@media (max-width: 900px) {
+  .vz-photos { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+@media (max-width: 600px) {
+  .vz-form-grid { grid-template-columns: 1fr; }
+  .vz-photos { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}

@@ -1,0 +1,25 @@
+# dependencies
+/node_modules
+
+# next.js
+/.next/
+/out/
+next-env.d.ts
+*.tsbuildinfo
+
+# environment (secrets) — .env.example is the committed template
+.env*
+!.env.example
+
+# order exports (customer data, never commit)
+/exports/
+
+# misc
+.DS_Store
+*.pem
+npm-debug.log*
+/coverage
+
+# Neon CLI: local link to the project/branch (written by `neon init` / `neon checkout`)
+.neon
+
