@@ -1,5 +1,4 @@
 import {and,eq,gte,inArray,isNotNull,sql} from 'drizzle-orm';
-import {revalidatePath} from 'next/cache';
 import {shippingFee} from '../../../lib/shipping';
 import {getDb,schema} from '../../../db';
 
@@ -50,8 +49,6 @@ export async function POST(req:Request){
         if(!updated.length)throw new OutOfStock();
       }
     });
-    // A tracked size may just have sold out: refresh the shop page.
-    if(lines.some(l=>l.stock!==null))revalidatePath('/');
     return Response.json({id,total,subtotal,shipping,city},{status:201});
   }catch(e){
     if(e instanceof OutOfStock)return Response.json({error:'Cette pointure n’est plus disponible.'},{status:409});

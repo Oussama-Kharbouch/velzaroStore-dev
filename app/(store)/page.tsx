@@ -4,10 +4,10 @@ import { siteImageUrl } from "../../lib/r2";
 import { getStoreCatalog } from "../../lib/store-catalog";
 
 /**
- * Page servie en statique et régénérée au plus tard toutes les 5 minutes ; le
- * dashboard la régénère aussitôt après une modification du catalogue ou du stock.
+ * Rendue à chaque visite (catalogue lu dans la base) : une modification faite dans le
+ * dashboard est visible aussitôt, sans cache à configurer sur Cloudflare Workers.
  */
-export const revalidate = 300;
+export const dynamic = "force-dynamic";
 
 export default async function Page() {
   // Hero and category pictures: addresses built from R2_PUBLIC_URL (lib/r2.ts).

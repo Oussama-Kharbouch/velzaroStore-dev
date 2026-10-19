@@ -1,5 +1,7 @@
 /**
- * Cloudflare R2 (bucket velzaro-media), via its S3-compatible API.
+ * Cloudflare R2 (bucket velzaro-media), via its S3-compatible API, signed with
+ * aws4fetch: a few kilobytes instead of the AWS SDK, which would not fit in the
+ * Worker size limit. (Local scripts keep @aws-sdk/client-s3.)
  *
  * Every image of the site lives in R2 under a key (products/cloudtilt/black/1.webp,
  * banners/hero.webp, categories/homme.webp…). The database stores keys only; public
@@ -10,7 +12,7 @@
  * R2_SECRET_ACCESS_KEY, R2_BUCKET, R2_ENDPOINT, R2_PUBLIC_URL.
  */
 import "server-only";
-import { DeleteObjectCommand, PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
+import { AwsClient } from "aws4fetch";
 import { toImageKey } from "./catalog.mjs";
 
 /** Images never change under a given key: browsers and the CDN may keep them a year. */
@@ -29,19 +31,25 @@ export const publicBaseUrl = () => (process.env.R2_PUBLIC_URL ?? "").trim().repl
 export const r2Configured = () =>
   ["R2_ACCESS_KEY_ID", "R2_SECRET_ACCESS_KEY", "R2_BUCKET", "R2_ENDPOINT"].every((name) => (process.env[name] ?? "").trim());
 
-let client: S3Client | undefined;
-const s3 = () => (client ??= new S3Client({
-  region: "auto",
-  endpoint: requireEnv("R2_ENDPOINT"),
-  credentials: { accessKeyId: requireEnv("R2_ACCESS_KEY_ID"), secretAccessKey: requireEnv("R2_SECRET_ACCESS_KEY") },
-}));
+/** Signed request to the bucket (path-style: <endpoint>/<bucket>/<key>). A new client per call. */
+const r2Fetch = async (method: "PUT" | "DELETE", key: string, init: { body?: Uint8Array<ArrayBuffer>; headers?: Record<string, string> } = {}) => {
+  const client = new AwsClient({
+    accessKeyId: requireEnv("R2_ACCESS_KEY_ID"),
+    secretAccessKey: requireEnv("R2_SECRET_ACCESS_KEY"),
+    service: "s3",
+    region: "auto",
+  });
+  const url = `${requireEnv("R2_ENDPOINT").replace(/\/+$/, "")}/${requireEnv("R2_BUCKET")}/${key.split("/").map(encodeURIComponent).join("/")}`;
+  const response = await client.fetch(url, { method, body: init.body, headers: init.headers });
+  if (!response.ok) throw new Error(`R2 ${method} ${key} : HTTP ${response.status} ${(await response.text()).slice(0, 200)}`);
+};
 
-export async function uploadToR2(body: Uint8Array, key: string, contentType: string, cacheControl = IMMUTABLE_CACHE) {
-  await s3().send(new PutObjectCommand({ Bucket: requireEnv("R2_BUCKET"), Key: key, Body: body, ContentType: contentType, CacheControl: cacheControl }));
+export async function uploadToR2(body: Uint8Array<ArrayBuffer>, key: string, contentType: string, cacheControl = IMMUTABLE_CACHE) {
+  await r2Fetch("PUT", key, { body, headers: { "Content-Type": contentType, "Cache-Control": cacheControl } });
 }
 
 export async function deleteFromR2(key: string) {
-  await s3().send(new DeleteObjectCommand({ Bucket: requireEnv("R2_BUCKET"), Key: key }));
+  await r2Fetch("DELETE", key);
 }
 
 /** Public address of a key. */

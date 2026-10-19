@@ -1,8 +1,8 @@
 /**
  * Gestion des coloris depuis le dashboard : création, modification (nom, nom
  * arabe, couleur, prix, mise en ligne, 6 photos, stock par pointure), ordre
- * d'affichage et suppression d'un brouillon. La boutique est régénérée après
- * chaque modification (routes d'API).
+ * d'affichage et suppression d'un brouillon. La boutique, rendue à chaque visite,
+ * montre chaque modification aussitôt.
  *
  * Règles :
  * — un coloris en ligne a exactement 6 photos (la galerie de la boutique en montre 6) ;

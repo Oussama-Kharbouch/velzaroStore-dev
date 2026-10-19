@@ -23,3 +23,8 @@ npm-debug.log*
 # Neon CLI: local link to the project/branch (written by `neon init` / `neon checkout`)
 .neon
 
+
+# OpenNext / Cloudflare: build output, local wrangler state and local secrets
+/.open-next/
+/.wrangler/
+.dev.vars*

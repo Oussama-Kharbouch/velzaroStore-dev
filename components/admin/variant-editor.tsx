@@ -14,7 +14,7 @@ const toNumber = (value: string) => (value.trim() === "" ? null : Number(value.t
 /**
  * Un coloris : prix, prix barré, mise en ligne et stock par pointure.
  * Stock vide = non suivi : la pointure reste toujours commandable.
- * À l'enregistrement, la boutique est régénérée côté serveur.
+ * La boutique, rendue à chaque visite, montre la modification aussitôt.
  */
 export default function VariantEditor({ variant, first, last }: { variant: CatalogVariant; first: boolean; last: boolean }) {
   const router = useRouter();

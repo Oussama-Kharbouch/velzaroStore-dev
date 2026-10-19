@@ -1,0 +1,28 @@
+// Cloudflare Worker serving VELZARO, built by OpenNext (`npx opennextjs-cloudflare build`,
+// then `npx opennextjs-cloudflare deploy`; Workers Builds runs both on each push to main).
+//
+// No secret here: DATABASE_URL, ADMIN_PASSWORD, ADMIN_SESSION_SECRET and the R2_*
+// variables are set in the Cloudflare dashboard (Workers → velzaro-store → Settings →
+// Variables and Secrets). See README.md for the full list.
+{
+	"$schema": "node_modules/wrangler/config-schema.json",
+	// Exact name of the Worker created in the dashboard.
+	"name": "velzaro-store",
+	"main": ".open-next/worker.js",
+	"compatibility_date": "2026-09-25",
+	// nodejs_compat: Node modules used by the S3 SDK (R2) and the Neon driver.
+	"compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
+	// Without it, each deploy erases the plain-text variables set in the dashboard
+	// (R2_PUBLIC_URL…): Deco Prestigea lost its images that way on 2026-10-03.
+	"keep_vars": true,
+	"assets": {
+		"directory": ".open-next/assets",
+		"binding": "ASSETS"
+	},
+	// Workers routes on the prestigea.shop zone (created in the dashboard, with proxied
+	// AAAA 100:: records for @ and www): every path of both hosts reaches the Worker.
+	"routes": [
+		{ "pattern": "prestigea.shop/*", "zone_name": "prestigea.shop" },
+		{ "pattern": "www.prestigea.shop/*", "zone_name": "prestigea.shop" }
+	]
+}

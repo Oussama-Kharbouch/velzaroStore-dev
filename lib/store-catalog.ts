@@ -1,7 +1,7 @@
 /**
  * Catalogue affiché par la boutique, lu dans la base : coloris en ligne, prix,
- * prix barré, pointures disponibles et photos. Le dashboard le modifie ; la page
- * d'accueil est alors régénérée (revalidatePath).
+ * prix barré, pointures disponibles et photos. La page est rendue à chaque visite :
+ * une modification du dashboard est visible aussitôt.
  */
 import "server-only";
 import { and, asc, eq, inArray } from "drizzle-orm";

@@ -3,12 +3,13 @@
 Boutique en ligne VELZARO (sneakers Cloudtilt) : catalogue de 11 coloris, pointures 40 à 44, favoris, panier, commande avec paiement à la livraison, interface en français et en arabe (RTL).
 
 - **Framework** : Next.js 16 (App Router), React 19, TypeScript
-- **Base de données** : PostgreSQL sur [Neon](https://neon.com), via [Drizzle ORM](https://orm.drizzle.team) et `node-postgres` (`pg`)
+- **Base de données** : PostgreSQL sur [Neon](https://neon.com), via [Drizzle ORM](https://orm.drizzle.team) et le pilote `@neondatabase/serverless`
+- **Hébergement** : Cloudflare Workers via [OpenNext](https://opennext.js.org/cloudflare) (Worker `velzaro-store`, domaine `prestigea.shop`)
 - **Images** : Cloudflare R2 (bucket `velzaro-media`) ; la base ne stocke que leurs clés
 
 ## Prérequis
 
-- Node.js **20.9 ou plus récent** (22 LTS recommandé ; le CLI Neon demande Node ≥ 22.20 pour `neon skills`)
+- Node.js **22 recommandé** (wrangler, la prévisualisation du Worker et `neon skills` l'exigent). Avec Node 20, `npm run dev` fonctionne grâce à l'option `--experimental-websocket` des scripts.
 - npm (fourni avec Node.js)
 - Le CLI Neon pour gérer la base : `npm i -g neon@latest`, puis `neon login`
 
@@ -45,7 +46,7 @@ Projet Neon `steep-cherry-94560228`, branche `production` (lien local dans `.neo
 
 Statuts de commande ([lib/orders/status.ts](lib/orders/status.ts)) : `en-attente` (À confirmer, par défaut) → `confirmee` → `en-preparation` → `expediee` (En livraison) → `livree`, ou `annulee` / `refusee` / `retournee` avec un motif obligatoire. Paiement : `a-encaisser` ou `encaisse`.
 
-**La boutique lit son catalogue dans la base** : coloris en ligne, prix, prix barré (et badge de remise), pointures épuisées et photos. Le dashboard la régénère aussitôt après une modification ; si la base ne répond pas, la boutique affiche le catalogue intégré à [lib/catalog.mjs](lib/catalog.mjs). Les prix et pointures sont aussi vérifiés côté serveur à chaque commande. **Stock** : laissé vide, une pointure est toujours commandable ; renseigné, chaque commande le décrémente, la commande est refusée (« Cette pointure n'est plus disponible ») quand il ne suffit plus, et une commande annulée, refusée ou retournée remet ses paires en stock.
+**La boutique lit son catalogue dans la base** : coloris en ligne, prix, prix barré (et badge de remise), pointures épuisées et photos. La page est rendue à chaque visite : une modification du dashboard est visible aussitôt ; si la base ne répond pas, la boutique affiche le catalogue intégré à [lib/catalog.mjs](lib/catalog.mjs). Les prix et pointures sont aussi vérifiés côté serveur à chaque commande. **Stock** : laissé vide, une pointure est toujours commandable ; renseigné, chaque commande le décrémente, la commande est refusée (« Cette pointure n'est plus disponible ») quand il ne suffit plus, et une commande annulée, refusée ou retournée remet ses paires en stock.
 
 **Dates** : toutes les dates des commandes viennent de l'horloge de la base (`now()`), pas de celle du serveur.
 
@@ -56,13 +57,13 @@ Toutes les images sont dans le bucket R2 `velzaro-media` :
 | Dossier | Contenu |
 | --- | --- |
 | `products/cloudtilt/<coloris>/1.webp … 6.webp` | Photos d'origine des coloris (envoyées telles quelles) |
-| `products/cloudtilt/<coloris>/photo-<n>.webp` | Photos ajoutées depuis le dashboard (WebP 1600 px, qualité 80) |
+| `products/cloudtilt/<coloris>/photo-<n>.webp` (ou `.jpg`) | Photos ajoutées depuis le dashboard (WebP 1600 px qualité 80, JPEG qualité 85 en secours) |
 | `banners/hero.webp` | Image d'accueil |
 | `categories/homme.webp`, `femme.webp`, `promotions.webp` | Cercles des catégories |
 
 La base (`product_images.url`) stocke la **clé** (`products/cloudtilt/black/1.webp`), jamais l'adresse complète : les adresses sont construites par [lib/r2.ts](lib/r2.ts) à partir de `R2_PUBLIC_URL`. Passer au domaine `https://media.prestigea.shop` = changer cette seule variable. Le cadrage de chaque photo (`app/(store)/*-framing.ts`) est indexé par clé.
 
-- **Envoi depuis le dashboard** : `POST /api/upload` (admin seulement, images seulement, 10 Mo max) convertit en WebP avec `sharp` et range le fichier dans R2.
+- **Envoi depuis le dashboard** : le navigateur prépare la photo (1600 px, WebP qualité 80 par l'encodeur WebAssembly `@jsquash/webp`, qui fonctionne partout y compris Safari/iPhone ; JPEG qualité 85 si l'encodeur ne peut pas tourner), puis `POST /api/upload` (admin seulement, WebP/JPEG vérifiés sur leurs octets, 10 Mo max) la range dans R2. Aucune bibliothèque d'image native côté serveur : elles ne tournent pas sur Workers.
 - **Migration des images de `public/`** : `npm run images:r2 -- --dry-run` montre ce qui sera fait ; `npm run images:r2` envoie les fichiers tels quels, vérifie chaque adresse publique (200 et taille), puis met à jour la base. Refusé sur la production sans `--production`. `public/` n'est jamais modifié.
 - Une ligne qui contient encore `/assets/…` (base pas encore migrée) reste affichée depuis `public/`.
 
@@ -75,7 +76,7 @@ Adresse : **`/ALLAH`** (définie par `ADMIN_PATH` dans [lib/site.ts](lib/site.ts
 | Tableau de bord | Chiffre d'affaires, panier moyen, commandes, à confirmer, à encaisser, clients, dernières commandes, ventes par coloris, stocks à surveiller |
 | Commandes | Compteurs par statut, recherche (référence, nom, téléphone sous tous ses formats, ville), filtres par statut et par période, pagination, contact WhatsApp |
 | Fiche commande | Frise d'avancement, étape suivante en un clic, livreur et n° de suivi, encaissement avec frais du livreur, annulation / refus / retour avec motif, correction manuelle du statut, historique et notes internes, message WhatsApp prérempli selon l'étape |
-| Catalogue et stock | Par coloris : prix, prix barré, en ligne / masqué, stock par pointure, paires vendues |
+| Produits | Par coloris : prix, prix barré, en ligne / masqué, stock par pointure, paires vendues, ordre d'affichage ; fiche complète (nom, nom arabe, couleur, 6 photos), ajout et suppression d'un brouillon |
 | Clients | Clients regroupés par téléphone : commandes, total dépensé, dernière commande, accès à leurs commandes et à WhatsApp |
 
 Aucune commande ne peut être supprimée depuis le dashboard : une vente qui n'aboutit pas est annulée, refusée ou retournée. Les changements de statut sont protégés contre le double clic (refusés si la commande a changé entre-temps).
@@ -98,6 +99,8 @@ Aucune commande ne peut être supprimée depuis le dashboard : une vente qui n'a
 | `npm run db:export` | Exporte toutes les commandes dans `exports/` (JSON + CSV lisible par Excel) |
 | `npm run db:studio` | Explorateur de la base (Drizzle Studio) |
 | `npm run images:r2 -- --dry-run` | Migration des images de `public/` vers R2 (simulation, puis sans `--dry-run`) |
+| `npm run preview` | Build OpenNext puis Worker en local (workerd), comme sur Cloudflare — Node 22 |
+| `npm run deploy` | Build et déploiement depuis l'ordinateur — **à éviter** : voir Hébergement |
 
 Avant d'appliquer une migration en production, testez-la sur une branche Neon : `neon branches create --name essai --parent production`, puis lancez `db:migrate` avec les URL de cette branche (`neon connection-string essai`).
 
@@ -110,9 +113,26 @@ Les commandes de l'ancien hébergement sont dans sa base Cloudflare D1 (table `o
 
 Chaque ancienne commande devient une ligne `orders` (ville, adresse et frais de livraison sont séparés à partir de l'ancienne adresse) et une ligne `order_items` par article ; numéro et date d'origine sont conservés, le statut est `en-attente` (À confirmer) et l'historique note l'import. L'import n'écrase et ne supprime jamais rien : une commande dont le numéro existe déjà est ignorée, il peut donc être relancé, par exemple avec un dernier export au moment de basculer le nom de domaine.
 
-## Hébergement
+## Hébergement (Cloudflare Workers)
 
-Serveur Node.js standard (`npm run build` puis `npm start`), ou Vercel. Définissez `DATABASE_URL` (poolée), `DATABASE_URL_UNPOOLED` (directe), `ADMIN_PASSWORD`, `ADMIN_SESSION_SECRET` et les six variables `R2_*` dans les variables d'environnement de l'hébergeur. Le build lit le catalogue dans la base : `DATABASE_URL` doit donc aussi être disponible au moment du build. Neon gère les sauvegardes (restauration à un instant donné) ; `npm run db:export` produit en plus une copie lisible des commandes.
+Worker **`velzaro-store`** ([wrangler.jsonc](wrangler.jsonc)), connecté au dépôt GitHub : **chaque push sur `main` déclenche un déploiement** (Workers Builds : `npx opennextjs-cloudflare build` puis `npx opennextjs-cloudflare deploy`). Routes Workers `prestigea.shop/*` et `www.prestigea.shop/*` sur la zone `prestigea.shop`. `keep_vars: true` : un déploiement n'efface pas les variables du tableau de bord.
+
+Variables à définir dans Cloudflare (Workers → velzaro-store → Settings) :
+
+| Variable | Build | Exécution | Type |
+| --- | --- | --- | --- |
+| `R2_PUBLIC_URL` | ✔ (`next.config.ts`) | ✔ | Texte |
+| `DATABASE_URL` (poolée) | — | ✔ | Secret |
+| `ADMIN_PASSWORD`, `ADMIN_SESSION_SECRET` | — | ✔ | Secret |
+| `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY` | — | ✔ | Secret |
+| `R2_ACCOUNT_ID`, `R2_BUCKET`, `R2_ENDPOINT` | — | ✔ | Texte |
+
+`DATABASE_URL_UNPOOLED` et `NEON_BRANCH` ne servent qu'aux migrations et scripts lancés depuis l'ordinateur.
+
+- **Ne déployez pas depuis l'ordinateur** (`npm run deploy`) : OpenNext recopie dans le Worker le contenu des fichiers `.env*` présents au moment du build, donc les secrets de `.env.local`. Sur Cloudflare, ce fichier n'existe pas : les secrets viennent du tableau de bord.
+- **Base** : une connexion par requête (pilote `@neondatabase/serverless`), fermée après 1 s d'inactivité. **R2** : requêtes S3 signées par `aws4fetch`. Le Worker pèse environ 1,6 Mio compressé (limite du plan gratuit : 3 Mio).
+
+Neon gère les sauvegardes (restauration à un instant donné, branche `backup-avant-0002`) ; `npm run db:export` produit en plus une copie lisible des commandes.
 
 ## Structure
 

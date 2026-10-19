@@ -3,9 +3,8 @@
  * PATCH  : modification rapide depuis la liste { price, oldPrice, active, stocks }
  * PUT    : fiche complète { name, nameAr, hex, price, oldPrice, active, photos, stocks }
  * DELETE : suppression d'un coloris jamais commandé
- * La boutique est régénérée aussitôt après chaque modification.
+ * La boutique, rendue à chaque visite, montre la modification aussitôt.
  */
-import { revalidatePath } from "next/cache";
 import { deleteVariant, saveVariant, updateVariant } from "../../../../../lib/admin/catalog";
 import { requireAdminApi } from "../../../../../lib/admin/guard";
 import { badId, numericId, readJson, toResponse, type Result } from "../../../../../lib/admin/respond";
@@ -24,7 +23,6 @@ const handle = async (request: Request, { params }: Context, run: (id: number, b
     data = body.data;
   }
   const result = await run(id, data);
-  if (result.ok) revalidatePath("/");
   return toResponse(result);
 };
 

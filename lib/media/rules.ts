@@ -6,16 +6,20 @@
 /** Largest file accepted by the upload route. */
 export const UPLOAD_MAX_BYTES = 10 * 1024 * 1024;
 
-/** New uploads are converted to WebP, at most 1600 px wide, quality 80. */
+/** New uploads: at most 1600 px wide; WebP quality 80, or JPEG quality 85 as a fallback. */
 export const UPLOAD_MAX_WIDTH = 1600;
 export const UPLOAD_WEBP_QUALITY = 80;
+export const UPLOAD_JPEG_QUALITY = 0.85;
 
-/** Image types accepted at upload (SVG excluded: it can carry scripts). */
+/** Photos the dashboard can read before conversion (SVG excluded: it can carry scripts). */
 export const ALLOWED_INPUT_TYPES = ["image/jpeg", "image/png", "image/webp", "image/avif", "image/gif", "image/heic", "image/heif"];
 export const ALLOWED_ACCEPT = ALLOWED_INPUT_TYPES.join(",");
 
-/** R2 key of a product photo: products/cloudtilt/<colourway>/<name>.webp */
-export const PRODUCT_PHOTO_KEY = /^products\/cloudtilt\/[a-z0-9-]+\/[a-z0-9-]+\.webp$/;
+/** Formats stored in R2, with their file extension. */
+export const STORED_IMAGE_TYPES = { "image/webp": "webp", "image/jpeg": "jpg" } as const;
+
+/** R2 key of a product photo: products/cloudtilt/<colourway>/<name>.webp|.jpg */
+export const PRODUCT_PHOTO_KEY = /^products\/cloudtilt\/[a-z0-9-]+\/[a-z0-9-]+\.(webp|jpg)$/;
 
 /** A stored photo reference: R2 key, or a former public/assets path (rows not yet migrated). */
 export const isImageRef = (ref: string) =>

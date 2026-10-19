@@ -6,8 +6,9 @@ import { ArrowLeft, ArrowRight, Eye, EyeOff, ImagePlus, LoaderCircle, RefreshCw,
 import { arabic } from "../../app/(store)/translations";
 import { galleryLabels, SIZES } from "../../lib/catalog.mjs";
 import type { EditableVariant } from "../../lib/admin/catalog";
-import { ALLOWED_ACCEPT, ALLOWED_INPUT_TYPES, UPLOAD_MAX_BYTES, humanSize } from "../../lib/media/rules";
+import { ALLOWED_ACCEPT, UPLOAD_MAX_BYTES, humanSize } from "../../lib/media/rules";
 import { ADMIN_PATH } from "../../lib/site";
+import { prepareImage } from "./prepare-image";
 
 const PHOTOS = 6;
 const toNumber = (value: string) => (value.trim() === "" ? null : Number(value.trim()));
@@ -60,10 +61,12 @@ export default function VariantForm({ variant }: { variant?: EditableVariant }) 
     setUploading(slot);
     setMessage(null);
     try {
-      if (!ALLOWED_INPUT_TYPES.includes(file.type)) throw new Error("Seules les images sont acceptées (JPEG, PNG, WebP, AVIF, GIF, HEIC).");
-      if (file.size > UPLOAD_MAX_BYTES) throw new Error(`Image trop lourde (${humanSize(file.size)}) : 10 Mo maximum.`);
+      if (file.type && !file.type.startsWith("image/")) throw new Error("Seules les images sont acceptées (JPEG, PNG, WebP, AVIF, GIF, HEIC).");
+      // Converted here (WebP, or JPEG fallback): the server, on Workers, cannot resize images.
+      const { file: ready, format } = await prepareImage(file);
+      if (ready.size > UPLOAD_MAX_BYTES) throw new Error(`Image trop lourde (${humanSize(ready.size)}) : 10 Mo maximum.`);
       const body = new FormData();
-      body.append("fichier", file);
+      body.append("fichier", ready);
       body.append("nom", name || "coloris");
       const response = await fetch("/api/upload", { method: "POST", body });
       const data = (await response.json().catch(() => ({ ok: false, erreur: `Le serveur a répondu ${response.status}.` }))) as
@@ -78,7 +81,7 @@ export default function VariantForm({ variant }: { variant?: EditableVariant }) 
         if (slot < next.length) next[slot] = photo; else next.push(photo);
         return next;
       });
-      setMessage({ tone: "info", text: `Photo envoyée sur R2 en WebP (${humanSize(file.size)} → ${humanSize(data.size ?? 0)}). Pensez à enregistrer la fiche.` });
+      setMessage({ tone: "info", text: `Photo envoyée sur R2 en ${format === "webp" ? "WebP" : "JPEG"} (${humanSize(file.size)} → ${humanSize(data.size ?? 0)}). Pensez à enregistrer la fiche.` });
     } catch (error) {
       setMessage({ tone: "error", text: error instanceof Error && error.message !== "Failed to fetch" ? error.message : "Le serveur n’a pas répondu." });
     } finally {
