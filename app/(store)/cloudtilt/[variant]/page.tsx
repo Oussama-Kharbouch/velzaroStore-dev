@@ -22,6 +22,6 @@ export default async function ProductPage({ params }: { params: Params }) {
   const { variant } = await params;
   const catalog = await getStoreCatalog();
   // Unknown or hidden colourway (old link): back to the shop rather than an error page.
-  if (!catalog.some((p) => p.id === variant)) redirect("/#boutique");
+  if (!catalog.some((p) => p.id === variant)) redirect("/boutique");
   return <Store catalog={catalog} media={getStoreMedia()} initialProductId={variant}/>;
 }

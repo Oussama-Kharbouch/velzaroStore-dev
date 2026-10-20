@@ -42,8 +42,14 @@ const nextConfig: NextConfig = {
    * and a rewritten address is not redirected again: no loop.
    */
   async redirects() {
-    if (ADMIN_PATH === "/admin") return [];
+    // The shop's home page is "/": /home and /accueil lead there.
+    const home = [
+      { source: "/home", destination: "/", permanent: true },
+      { source: "/accueil", destination: "/", permanent: true },
+    ];
+    if (ADMIN_PATH === "/admin") return home;
     return [
+      ...home,
       { source: "/admin", destination: "/", permanent: false },
       { source: "/admin/:path*", destination: "/", permanent: false },
     ];

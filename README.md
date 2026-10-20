@@ -89,7 +89,7 @@ Aucune commande ne peut être supprimée depuis le dashboard : une vente qui n'a
 
 | Événement | Moment | Données |
 | --- | --- | --- |
-| PageView | Chaque page (une fiche produit `/cloudtilt/<coloris>` compte comme une page) | — |
+| PageView | Chaque page : accueil, rubriques (`/boutique`, `/femme`…) et fiches produit `/cloudtilt/<coloris>` | — |
 | ViewContent | Ouverture d'une fiche produit | coloris, prix, MAD |
 | AddToCart | Ajout au panier | coloris, prix, quantité, MAD |
 | InitiateCheckout | Ouverture du formulaire (« Acheter maintenant » ou « Passer commande ») | coloris, montant, nombre d'articles, MAD |
@@ -158,7 +158,11 @@ Neon gère les sauvegardes (restauration à un instant donné, branche `backup-a
 ```
 app/
   (store)/                  boutique (styles propres au groupe)
-    page.tsx                lit le catalogue dans la base et le passe à la boutique
+    page.tsx                accueil (/) : lit le catalogue dans la base et le passe à la boutique
+    boutique/ femme/ homme/ promotions/ favoris/
+                            une adresse par rubrique (/boutique…), rendue avec la rubrique ouverte ;
+                            /home et /accueil → / ; les anciens liens « /#boutique » sont convertis
+    cloudtilt/[variant]/    fiche produit /cloudtilt/<coloris>
     store.tsx               boutique (client) : catalogue, fiche produit, panier, favoris, popups, commande
     translations.ts         textes français → arabe
     *-framing.ts            cadrage de chaque photo (vignette, coloris, galerie)
