@@ -18,13 +18,15 @@ const COLUMNS = [
   "link", "image_link", "additional_image_link", "brand", "color", "gender", "age_group", "google_product_category",
 ] as const;
 
-/** Same wording as the "Description" panel of the product page (app/(store)/store.tsx). */
+/** Same wording as the "Description" panel of the product page (app/(store)/store.tsx), colours written the Meta way. */
 const description = (p: StoreProduct) =>
   p.id === "white-black"
     ? "Une tige en maille ivoire contrastée par une languette et des lacets noirs. La semelle blanche sculptée souligne une silhouette moderne, facile à associer au quotidien."
-    : `${PRODUCT.name}, coloris ${p.name}. Une silhouette contemporaine, une tige en maille et une semelle sculptée pour compléter vos tenues du quotidien.`;
+    : `${PRODUCT.name}, coloris ${metaColor(p.name)}. Une silhouette contemporaine, une tige en maille et une semelle sculptée pour compléter vos tenues du quotidien.`;
 
 const GENDER: Record<string, string> = { homme: "male", femme: "female" };
+/** Colourway in Meta's style: "Black | Ivory" → "Black/Ivory" (Meta expects "/" between colours, no "|"). */
+const metaColor = (name: string) => name.split("|").map((part) => part.trim()).join("/");
 const money = (value: number) => `${value.toFixed(2)} MAD`;
 /** Photos still served from public/ (/assets/…) get the shop's address. */
 const absolute = (url: string) => new URL(url, SITE_URL).href;
@@ -36,7 +38,7 @@ function row(p: StoreProduct): Record<(typeof COLUMNS)[number], string> {
   return {
     id: catalogId(p.id),
     item_group_id: PRODUCT.slug,
-    title: `${PRODUCT.name} ${p.name}`,
+    title: `${PRODUCT.name} – ${metaColor(p.name)}`,
     description: description(p),
     availability: p.sizes.some((s) => s.available) ? "in stock" : "out of stock",
     condition: "new",
@@ -46,7 +48,7 @@ function row(p: StoreProduct): Record<(typeof COLUMNS)[number], string> {
     image_link: photos[0] ?? "",
     additional_image_link: photos.slice(1).join(","),
     brand: "Velzaro",
-    color: p.name,
+    color: metaColor(p.name),
     gender: GENDER[p.category] ?? "unisex",
     age_group: "adult",
     google_product_category: "Apparel & Accessories > Shoes",
