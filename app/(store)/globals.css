@@ -366,3 +366,9 @@ html[dir=rtl] .prestige-detail .detail-price{justify-content:flex-end}
 
 /* Pointure épuisée (stock à 0 dans le dashboard) : visible mais non sélectionnable. */
 .sizes button:disabled,.popup-sizes button:disabled{opacity:.35;cursor:not-allowed;text-decoration:line-through}
+/* Colourway sold out in every size (stock 0 in the dashboard): grey photos, "Épuisé" badge, no purchase. */
+.card.sold-out .picture img,.product-visual.sold-out .gallery-track img,.color-photos button.sold-out img{filter:grayscale(1);opacity:.5}
+.card.sold-out .product-name,.card.sold-out .price{opacity:.5}
+.card.sold-out .card-actions .btn:disabled,.product-actions .btn:disabled{opacity:.35;cursor:not-allowed}
+.sold-out-badge{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);z-index:1;pointer-events:none;background:rgba(22,22,22,.82);color:#fff;padding:6px 12px;border-radius:5px;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;white-space:nowrap}
+.sold-out-note{margin:6px 0 0;color:var(--grey);font-weight:600}
