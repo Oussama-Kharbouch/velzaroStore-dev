@@ -95,6 +95,10 @@ Aucune commande ne peut être supprimée depuis le dashboard : une vente qui n'a
 | InitiateCheckout | Ouverture du formulaire (« Acheter maintenant » ou « Passer commande ») | coloris, montant, nombre d'articles, MAD |
 | Purchase | Commande enregistrée ; `eventID` = n° de commande (VZ-…) | coloris, total livraison comprise, MAD + données client |
 
+Les `content_ids` sont les identifiants du catalogue Meta (`cloudtilt-<coloris>`, `catalogId` dans [lib/catalog.mjs](lib/catalog.mjs)), avec `content_type: 'product'`.
+
+**Flux du catalogue Meta** : [`/feed/meta.csv`](app/feed/meta.csv/route.ts), format CSV « Gestionnaire des ventes », une ligne par coloris en ligne (`id` = `cloudtilt-<coloris>`, `item_group_id` = `cloudtilt`). Construit à chaque lecture à partir des mêmes données que les fiches produit : prix, prix barré (→ `sale_price`), stock (→ `availability`), photos R2 et coloris masqués suivent le dashboard. Aucune donnée client. À programmer dans le Gestionnaire de catalogue avec une mise à jour quotidienne.
+
 Données client de l'achat (« Advanced Matching ») : prénom, nom, téléphone (`212…`), ville et pays (`ma`), normalisés selon les règles Meta puis **hachés en SHA-256** dans le navigateur : Meta ne reçoit que les empreintes. L'adresse n'est jamais envoyée (Meta n'a pas de champ pour la rue).
 
 ## Scripts
