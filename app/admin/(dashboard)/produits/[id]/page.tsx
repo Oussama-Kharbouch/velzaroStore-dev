@@ -23,7 +23,7 @@ export default async function EditVariantPage({ params, searchParams }: { params
   return (
     <>
       <AdminHeader eyebrow="Cloudtilt" title={variant.colorName}>
-        {variant.active && <a className="ad-btn" href={`/#produit/${variant.slug}`} target="_blank" rel="noopener"><ExternalLink/> Voir sur la boutique</a>}
+        {variant.active && <a className="ad-btn" href={`/cloudtilt/${variant.slug}`} target="_blank" rel="noopener"><ExternalLink/> Voir sur la boutique</a>}
       </AdminHeader>
       <div className="ad-content">
         <Link className="ad-back" href={`${ADMIN_PATH}/produits`}><ArrowLeft/> Retour aux produits</Link>

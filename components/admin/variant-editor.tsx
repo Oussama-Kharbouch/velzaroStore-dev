@@ -96,7 +96,7 @@ export default function VariantEditor({ variant, first, last }: { variant: Catal
         <div className="vz-variant-title">
           <h2><span className="vz-swatch" style={{ background: variant.hex }} aria-hidden="true"/>{variant.name}</h2>
           <p>
-            <a href={`/#produit/${variant.slug}`} target="_blank" rel="noopener">#{variant.slug}</a>
+            <a href={`/cloudtilt/${variant.slug}`} target="_blank" rel="noopener">/cloudtilt/{variant.slug}</a>
             {" · "}{variant.sold} paire{variant.sold > 1 ? "s" : ""} vendue{variant.sold > 1 ? "s" : ""}
             {variant.photoCount < 6 && <span className="vz-warn"><TriangleAlert aria-hidden="true"/> {variant.photoCount}/6 photos</span>}
           </p>

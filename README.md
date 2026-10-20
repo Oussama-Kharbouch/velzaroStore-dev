@@ -83,6 +83,20 @@ Aucune commande ne peut être supprimée depuis le dashboard : une vente qui n'a
 
 **Connexions** : l'application utilise l'URL **poolée** (`DATABASE_URL`) ; les migrations et les scripts `db:*` utilisent l'URL **directe** (`DATABASE_URL_UNPOOLED`), comme le recommande Neon.
 
+## Meta Pixel
+
+[components/meta-pixel.tsx](components/meta-pixel.tsx), chargé par la boutique seulement (jamais par le dashboard), et **actif uniquement sur `prestigea.shop` / `www.prestigea.shop`** : en local et en test, aucun événement ne part chez Meta.
+
+| Événement | Moment | Données |
+| --- | --- | --- |
+| PageView | Chaque page (une fiche produit `/cloudtilt/<coloris>` compte comme une page) | — |
+| ViewContent | Ouverture d'une fiche produit | coloris, prix, MAD |
+| AddToCart | Ajout au panier | coloris, prix, quantité, MAD |
+| InitiateCheckout | Ouverture du formulaire (« Acheter maintenant » ou « Passer commande ») | coloris, montant, nombre d'articles, MAD |
+| Purchase | Commande enregistrée ; `eventID` = n° de commande (VZ-…) | coloris, total livraison comprise, MAD + données client |
+
+Données client de l'achat (« Advanced Matching ») : prénom, nom, téléphone (`212…`), ville et pays (`ma`), normalisés selon les règles Meta puis **hachés en SHA-256** dans le navigateur : Meta ne reçoit que les empreintes. L'adresse n'est jamais envoyée (Meta n'a pas de champ pour la rue).
+
 ## Scripts
 
 | Commande | Effet |

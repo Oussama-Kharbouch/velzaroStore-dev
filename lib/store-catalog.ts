@@ -6,13 +6,13 @@
 import "server-only";
 import { and, asc, eq, inArray } from "drizzle-orm";
 import { getDb, schema } from "../db";
-import { OLD_PRICE, PRICE, SIZES, legacyPhotoPaths, photoKeys, products as staticProducts } from "./catalog.mjs";
+import { OLD_PRICE, PRICE, SIZES, legacyPhotoPaths, photoKeys, products as staticProducts, siteImages } from "./catalog.mjs";
 import { imageKey, imageUrl, siteImageUrl } from "./r2";
 
 const { products, variants, variantSizes, productImages } = schema;
 
 export type StoreProduct = {
-  /** Slug du coloris : identifiant du panier et des URL (#produit/<id>). */
+  /** Slug du coloris : identifiant du panier et de l’adresse du produit (/cloudtilt/<id>). */
   id: string;
   name: string;
   /** Nom arabe saisi dans le dashboard ; null = traduction intégrée (translations.ts). */
@@ -75,3 +75,9 @@ export async function getStoreCatalog(): Promise<StoreProduct[]> {
     return fallbackCatalog();
   }
 }
+
+/** Hero and category pictures: addresses built from R2_PUBLIC_URL (lib/r2.ts). */
+export const getStoreMedia = () => ({
+  hero: siteImageUrl(siteImages.hero),
+  categories: Object.fromEntries(Object.entries(siteImages.categories).map(([id, image]) => [id, siteImageUrl(image)])),
+});

@@ -131,7 +131,7 @@ export const createVariant = async (payload: unknown): Promise<Result<{ id: numb
     const [product] = await tx.select({ id: products.id }).from(products).orderBy(asc(products.id)).limit(1);
     if (!product) return ko("Produit Cloudtilt introuvable : lancez npm run db:seed.");
 
-    // Slug: identifier of the cart and of the URL (#produit/<slug>), unique and never reused.
+    // Slug: identifier of the cart and of the product URL (/cloudtilt/<slug>), unique and never reused.
     const base = slugify(input.name) || "coloris";
     let slug = base;
     for (let n = 2; (await tx.select({ id: variants.id }).from(variants).where(eq(variants.slug, slug)).limit(1)).length; n++) slug = `${base}-${n}`;
