@@ -97,7 +97,7 @@ Aucune commande ne peut être supprimée depuis le dashboard : une vente qui n'a
 
 Les `content_ids` sont les identifiants du catalogue Meta (`cloudtilt-<coloris>`, `catalogId` dans [lib/catalog.mjs](lib/catalog.mjs)), avec `content_type: 'product'`.
 
-**Flux du catalogue Meta** : [`/feed/meta.csv`](app/feed/meta.csv/route.ts), format CSV « Gestionnaire des ventes », une ligne par coloris en ligne (`id` = `cloudtilt-<coloris>`, `item_group_id` = `cloudtilt`). Construit à chaque lecture à partir des mêmes données que les fiches produit : prix, prix barré (→ `sale_price`), stock (→ `availability`), photos R2 et coloris masqués suivent le dashboard. Aucune donnée client. À programmer dans le Gestionnaire de catalogue avec une mise à jour quotidienne.
+**Flux du catalogue Meta** : [`/feed/meta.csv`](app/feed/meta.csv/route.ts), format CSV « Gestionnaire des ventes », une ligne par coloris en ligne (`id` = `cloudtilt-<coloris>`, `item_group_id` = `cloudtilt`). Construit à chaque lecture à partir des mêmes données que les fiches produit : prix, prix barré (→ `sale_price`), stock (→ `availability`), photos R2 et coloris masqués suivent le dashboard. Aucune donnée client. À programmer dans le Gestionnaire de catalogue avec une mise à jour quotidienne. Protection facultative par authentification HTTP Basic : quand les secrets `FEED_USER` et `FEED_PASSWORD` sont définis, le flux répond `401` sans ces identifiants (à reporter dans les paramètres de la source de données Meta) ; sans eux, il reste ouvert.
 
 Données client de l'achat (« Advanced Matching ») : prénom, nom, téléphone (`212…`), ville et pays (`ma`), normalisés selon les règles Meta puis **hachés en SHA-256** dans le navigateur : Meta ne reçoit que les empreintes. L'adresse n'est jamais envoyée (Meta n'a pas de champ pour la rue).
 
@@ -144,6 +144,7 @@ Variables à définir dans Cloudflare (Workers → velzaro-store → Settings) :
 | `ADMIN_PASSWORD`, `ADMIN_SESSION_SECRET` | — | ✔ | Secret |
 | `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY` | — | ✔ | Secret |
 | `R2_ACCOUNT_ID`, `R2_BUCKET`, `R2_ENDPOINT` | — | ✔ | Texte |
+| `FEED_USER`, `FEED_PASSWORD` (facultatifs) | — | ✔ | Secret |
 
 `DATABASE_URL_UNPOOLED` et `NEON_BRANCH` ne servent qu'aux migrations et scripts lancés depuis l'ordinateur.
 
