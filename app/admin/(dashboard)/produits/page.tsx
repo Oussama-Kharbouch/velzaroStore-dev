@@ -4,6 +4,7 @@ import { ExternalLink, Plus } from "lucide-react";
 import { Alert } from "../../../../components/admin/bits";
 import AdminHeader from "../../../../components/admin/header";
 import VariantEditor from "../../../../components/admin/variant-editor";
+import VariantOrder from "../../../../components/admin/variant-order";
 import { listCatalog } from "../../../../lib/admin/queries";
 import { ADMIN_PATH } from "../../../../lib/site";
 
@@ -33,14 +34,16 @@ export default async function ProductsPage() {
         <div style={{ margin: "18px 0" }}>
           <Alert tone="info">
             Modifiez ici le prix, la mise en ligne et le stock d’un coloris ; « Modifier la fiche » donne accès à son nom,
-            son nom arabe, sa couleur et ses 6 photos. Chaque enregistrement met la boutique à jour aussitôt. Les flèches
-            changent l’ordre d’affichage sur la boutique.
+            son nom arabe, sa couleur et ses 6 photos. Chaque enregistrement met la boutique à jour aussitôt.
+            L’ordre d’affichage sur la boutique se règle dans « Ordre sur la boutique » ci-dessous.
           </Alert>
         </div>
 
+        <VariantOrder variants={variants}/>
+
         <div className="vz-variants">
-          {variants.map((variant, index) => (
-            <VariantEditor key={variant.id} variant={variant} first={index === 0} last={index === variants.length - 1}/>
+          {variants.map((variant) => (
+            <VariantEditor key={variant.id} variant={variant}/>
           ))}
         </div>
       </div>

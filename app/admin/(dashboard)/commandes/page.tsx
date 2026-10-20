@@ -5,6 +5,7 @@ import { EmptyState, OrderStatusBadge, PaymentBadge } from "../../../../componen
 import AdminHeader from "../../../../components/admin/header";
 import ListToolbar from "../../../../components/admin/list-toolbar";
 import Pagination from "../../../../components/admin/pagination";
+import DeleteOrderButton from "../../../../components/admin/orders/delete-order-button";
 import StatusCounters from "../../../../components/admin/status-counters";
 import WhatsappIcon from "../../../../components/admin/whatsapp-icon";
 import { formatDH, formatShortDate } from "../../../../lib/admin/format";
@@ -84,6 +85,8 @@ export default async function OrdersPage({ searchParams }: { searchParams: Param
                         ) : (
                           <span className="ord-no-phone" title="Numéro absent ou invalide">Numéro invalide</span>
                         )}
+                        <DeleteOrderButton id={order.id} number={order.number} reference={shortReference(order.number)}
+                          customer={order.customerName} total={formatDH(order.total)}/>
                       </td>
                     </tr>
                   );

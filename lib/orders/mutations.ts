@@ -5,7 +5,9 @@
  * clic : la mise à jour ne s'applique que si la commande est toujours dans
  * l'état que l'administrateur avait sous les yeux.
  *
- * Aucune commande n'est jamais supprimée : une vente qui n'aboutit pas est annulée.
+ * Une vente qui n'aboutit pas est annulée, refusée ou retournée (elle reste dans
+ * l'historique). La suppression définitive (deleteOrder) sert aux commandes à
+ * effacer : essais, doublons, fausses commandes.
  */
 import "server-only";
 import { and, eq, gte, isNotNull, sql } from "drizzle-orm";
@@ -121,6 +123,38 @@ export const changeOrderStatus = async (id: number, payload: unknown): Promise<R
     if (error instanceof StockShortage) return ko(error.message);
     throw error;
   }
+};
+
+/**
+ * Suppression définitive d'une commande, avec ses lignes, son historique et ses notes
+ * (ON DELETE CASCADE). Corps : { number } — la référence affichée au moment du clic,
+ * pour ne jamais supprimer une autre commande que celle confirmée à l'écran.
+ * Une commande encore en cours avait pris ses paires dans le stock suivi : elles y
+ * retournent. Une commande annulée, refusée ou retournée les a déjà rendues.
+ */
+export const deleteOrder = async (id: number, payload: unknown): Promise<Result<{ id: number; restocked: number }>> => {
+  const parsed = z.object({ number: z.string().trim().min(1, "Référence manquante.") }).safeParse(payload);
+  if (!parsed.success) return firstIssue(parsed.error);
+
+  return getDb().transaction(async (tx) => {
+    const [order] = await tx.select({ number: orders.orderNumber, status: orders.status }).from(orders).where(eq(orders.id, id)).limit(1);
+    if (!order) return ko("Cette commande n'existe plus : la liste a été mise à jour.");
+    if (order.number !== parsed.data.number) return ko("La référence ne correspond pas : rechargez la page avant de recommencer.");
+
+    let restocked = 0;
+    if (!isClosing(order.status)) {
+      const lines = await tx.select({ variantId: orderItems.variantId, size: orderItems.size, quantity: orderItems.quantity })
+        .from(orderItems).where(eq(orderItems.orderId, id));
+      for (const line of lines) {
+        const r = await tx.update(variantSizes).set({ stock: sql`${variantSizes.stock} + ${line.quantity}` })
+          .where(and(eq(variantSizes.variantId, line.variantId), eq(variantSizes.size, line.size), isNotNull(variantSizes.stock)))
+          .returning({ id: variantSizes.id });
+        if (r.length) restocked += line.quantity;
+      }
+    }
+    await tx.delete(orders).where(eq(orders.id, id));
+    return ok({ id, restocked });
+  });
 };
 
 const noteSchema = z.object({

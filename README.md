@@ -74,12 +74,14 @@ Adresse : **`/ALLAH`** (définie par `ADMIN_PATH` dans [lib/site.ts](lib/site.ts
 | Page | Contenu |
 | --- | --- |
 | Tableau de bord | Chiffre d'affaires, panier moyen, commandes, à confirmer, à encaisser, clients, dernières commandes, ventes par coloris, stocks à surveiller |
-| Commandes | Compteurs par statut, recherche (référence, nom, téléphone sous tous ses formats, ville), filtres par statut et par période, pagination, contact WhatsApp |
+| Commandes | Compteurs par statut, recherche (référence, nom, téléphone sous tous ses formats, ville), filtres par statut et par période, pagination, contact WhatsApp, suppression définitive (corbeille) |
 | Fiche commande | Frise d'avancement, étape suivante en un clic, livreur et n° de suivi, encaissement avec frais du livreur, annulation / refus / retour avec motif, correction manuelle du statut, historique et notes internes, message WhatsApp prérempli selon l'étape |
 | Produits | Par coloris : prix, prix barré, en ligne / masqué, stock par pointure, paires vendues, ordre d'affichage ; fiche complète (nom, nom arabe, couleur, 6 photos), ajout et suppression d'un brouillon |
 | Clients | Clients regroupés par téléphone : commandes, total dépensé, dernière commande, accès à leurs commandes et à WhatsApp |
 
-Aucune commande ne peut être supprimée depuis le dashboard : une vente qui n'aboutit pas est annulée, refusée ou retournée. Les changements de statut sont protégés contre le double clic (refusés si la commande a changé entre-temps).
+Une vente qui n'aboutit pas est annulée, refusée ou retournée : elle reste dans l'historique et les statistiques. La **corbeille** de la liste des commandes supprime définitivement une commande (essai, doublon, fausse commande) après confirmation, avec ses lignes, son historique et ses notes ; si elle n'était pas annulée, ses paires suivies en stock y retournent. La suppression envoie la référence affichée à l'écran : une autre commande ne peut pas partir à sa place. Les changements de statut sont protégés contre le double clic (refusés si la commande a changé entre-temps).
+
+**Ordre d'affichage** : panneau « Ordre sur la boutique » en haut de la page Produits — glisser-déposer (ordinateur) ou flèches (téléphone), puis « Enregistrer l'ordre ». L'ordre vaut pour l'accueil, la boutique et les vignettes de coloris.
 
 **Connexions** : l'application utilise l'URL **poolée** (`DATABASE_URL`) ; les migrations et les scripts `db:*` utilisent l'URL **directe** (`DATABASE_URL_UNPOOLED`), comme le recommande Neon.
 

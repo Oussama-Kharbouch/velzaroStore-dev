@@ -173,20 +173,22 @@ export const saveVariant = async (id: number, payload: unknown): Promise<Result<
 
 /* --- Ordre d'affichage et suppression ----------------------------------------- */
 
-export const moveVariant = async (id: number, payload: unknown): Promise<Result<{ id: number }>> => {
-  const parsed = z.object({ direction: z.enum(["haut", "bas"], { errorMap: () => ({ message: "Direction inconnue." }) }) }).safeParse(payload);
+/**
+ * Whole display order of the shop at once. Body: { ids } — every colourway, first shown first.
+ * Refused if the list no longer matches the database (colourway added or deleted meanwhile).
+ */
+export const setVariantOrder = async (payload: unknown): Promise<Result<{ count: number }>> => {
+  const parsed = z.object({ ids: z.array(z.number().int().positive()).min(1, "Liste vide.") }).safeParse(payload);
   if (!parsed.success) return firstIssue(parsed.error);
+  const { ids } = parsed.data;
 
   return inTransaction(async (tx) => {
-    const list = await tx.select({ id: variants.id }).from(variants).orderBy(asc(variants.position), asc(variants.id));
-    const index = list.findIndex((v) => v.id === id);
-    if (index < 0) return ko("Ce coloris n'existe pas.");
-    const target = parsed.data.direction === "haut" ? index - 1 : index + 1;
-    if (target < 0 || target >= list.length) return ok({ id });
-    [list[index], list[target]] = [list[target], list[index]];
-    // Positions rewritten 0..n: ties left by older data disappear.
-    for (const [position, v] of list.entries()) await tx.update(variants).set({ position }).where(eq(variants.id, v.id));
-    return ok({ id });
+    const existing = await tx.select({ id: variants.id }).from(variants);
+    const same = new Set(ids).size === ids.length && ids.length === existing.length && existing.every((v) => ids.includes(v.id));
+    if (!same) return ko("La liste des coloris a changé entre-temps : rechargez la page avant de réorganiser.");
+    // Positions rewritten 0..n.
+    for (const [position, id] of ids.entries()) await tx.update(variants).set({ position }).where(eq(variants.id, id));
+    return ok({ count: ids.length });
   });
 };
 

@@ -129,6 +129,10 @@
 }
 .ord-icon-btn:hover { border-color: var(--orange); color: var(--orange); }
 .ord-icon-btn svg { width: 18px; height: 18px; }
+/* Delete (trash): red, so it is never mistaken for "view". */
+.ord-icon-btn-danger { border-color: #eccecb; color: var(--ad-red); cursor: pointer; }
+.ord-icon-btn-danger:hover:not(:disabled) { border-color: var(--ad-red); background: #fdf1f0; color: var(--ad-red); }
+.ord-icon-btn-danger:disabled { opacity: .5; cursor: wait; }
 
 .ord-pagination {
   display: flex;

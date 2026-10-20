@@ -3,7 +3,7 @@
 import { useRef, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { ArrowDown, ArrowUp, Eye, EyeOff, LoaderCircle, PencilLine, Save, TriangleAlert } from "lucide-react";
+import { Eye, EyeOff, LoaderCircle, PencilLine, Save, TriangleAlert } from "lucide-react";
 import { ADMIN_PATH } from "../../lib/site";
 import { formatDH } from "../../lib/admin/format";
 import type { CatalogVariant } from "../../lib/admin/queries";
@@ -16,7 +16,7 @@ const toNumber = (value: string) => (value.trim() === "" ? null : Number(value.t
  * Stock vide = non suivi : la pointure reste toujours commandable.
  * La boutique, rendue à chaque visite, montre la modification aussitôt.
  */
-export default function VariantEditor({ variant, first, last }: { variant: CatalogVariant; first: boolean; last: boolean }) {
+export default function VariantEditor({ variant }: { variant: CatalogVariant }) {
   const router = useRouter();
   const lock = useRef(false);
   const [refreshing, startRefresh] = useTransition();
@@ -33,27 +33,6 @@ export default function VariantEditor({ variant, first, last }: { variant: Catal
     || active !== variant.active
     || stocks.some((s, i) => s.value !== (variant.sizes[i].stock === null ? "" : String(variant.sizes[i].stock)));
   const busy = sending || refreshing;
-
-  /** Order on the shop: one step up or down, saved at once. */
-  const move = async (direction: "haut" | "bas") => {
-    if (lock.current) return;
-    lock.current = true;
-    setSending(true);
-    setMessage(null);
-    try {
-      const response = await fetch(`/api/admin/variants/${variant.id}/move`, {
-        method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ direction }),
-      });
-      const data = (await response.json().catch(() => ({ ok: false, erreur: `Le serveur a répondu ${response.status}.` }))) as { ok: boolean; erreur?: string };
-      if (data.ok) startRefresh(() => router.refresh());
-      else setMessage({ tone: "error", text: data.erreur ?? "Déplacement impossible." });
-    } catch {
-      setMessage({ tone: "error", text: "Le serveur n’a pas répondu." });
-    } finally {
-      lock.current = false;
-      setSending(false);
-    }
-  };
 
   const save = async () => {
     if (lock.current) return;
@@ -101,10 +80,6 @@ export default function VariantEditor({ variant, first, last }: { variant: Catal
             {variant.photoCount < 6 && <span className="vz-warn"><TriangleAlert aria-hidden="true"/> {variant.photoCount}/6 photos</span>}
           </p>
         </div>
-        <span className="vz-order">
-          <button type="button" onClick={() => move("haut")} disabled={busy || first} aria-label={`Monter ${variant.name}`} title="Monter"><ArrowUp/></button>
-          <button type="button" onClick={() => move("bas")} disabled={busy || last} aria-label={`Descendre ${variant.name}`} title="Descendre"><ArrowDown/></button>
-        </span>
         <button type="button" className={`vz-toggle${active ? " is-on" : ""}`} onClick={() => setActive(!active)}
           aria-pressed={active} title={active ? "Visible sur la boutique" : "Masqué de la boutique"}>
           {active ? <Eye aria-hidden="true"/> : <EyeOff aria-hidden="true"/>}
