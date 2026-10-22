@@ -3,8 +3,9 @@ import {
   boolean, check, index, integer, pgTable, serial, text, timestamp, uniqueIndex,
 } from "drizzle-orm/pg-core";
 import { ORDER_STATUSES, PAYMENT_STATUSES } from "../lib/orders/status";
+import { GENDERS } from "../lib/catalog-categories";
 
-export { ORDER_STATUSES, PAYMENT_STATUSES };
+export { ORDER_STATUSES, PAYMENT_STATUSES, GENDERS };
 
 /**
  * Schéma PostgreSQL (Neon).
@@ -19,6 +20,8 @@ export const products = pgTable("products", {
   name: text("name").notNull(),
   slug: text("slug").notNull().unique(),
   description: text("description").notNull().default(""),
+  // Marque du modèle (« On ») ; null = non renseignée. Saisie dans le dashboard.
+  brand: text("brand"),
   active: boolean("active").notNull().default(true),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
@@ -38,9 +41,12 @@ export const variants = pgTable("variants", {
   active: boolean("active").notNull().default(true),
   // Ordre d'affichage des coloris.
   position: integer("position").notNull().default(0),
+  // Catégorie du dashboard : homme, femme ou unisexe ; null = non classé (jamais deviné).
+  gender: text("gender", { enum: GENDERS }),
 }, (table) => [
   index("variants_product_idx").on(table.productId),
   check("variants_price_positive", sql`${table.price} > 0`),
+  check("variants_gender_valid", sql`${table.gender} is null or ${table.gender} in (${sql.raw(GENDERS.map((g) => `'${g}'`).join(", "))})`),
 ]);
 
 /**
@@ -106,15 +112,19 @@ export const orders = pgTable("orders", {
   amountReceived: integer("amount_received"),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+  // Suppression logique (corbeille du dashboard) : la commande disparaît de tous les écrans
+  // et des statistiques, mais ses données restent en base. Null = commande visible.
+  deletedAt: timestamp("deleted_at", { withTimezone: true }),
 }, (table) => [
   index("orders_created_at_idx").on(table.createdAt),
+  index("orders_deleted_at_idx").on(table.deletedAt),
   index("orders_status_idx").on(table.status),
   index("orders_phone_idx").on(table.phone),
   check("orders_status_valid", sql`${table.status} in (${inList(ORDER_STATUSES)})`),
   check("orders_payment_status_valid", sql`${table.paymentStatus} in (${inList(PAYMENT_STATUSES)})`),
 ]);
 
-export const ORDER_EVENT_KINDS = ["creation", "status", "correction", "note", "payment"] as const;
+export const ORDER_EVENT_KINDS = ["creation", "status", "correction", "note", "payment", "suppression"] as const;
 
 /** Historique d'une commande : création, changements de statut, notes internes, encaissement. */
 export const orderEvents = pgTable("order_events", {

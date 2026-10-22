@@ -1,15 +1,17 @@
 /** Lectures du dashboard : indicateurs, ventes par coloris, stocks, clients, catalogue. */
 import "server-only";
-import { asc, desc, eq, notInArray, sql } from "drizzle-orm";
+import { asc, desc, eq, isNull, notInArray, sql } from "drizzle-orm";
 import { getDb, schema } from "../../db";
 import { LOST_STATUSES } from "../orders/status";
 import { imageUrl } from "../r2";
 import { LOW_STOCK_THRESHOLD } from "./thresholds";
 
-const { orders, variants, variantSizes } = schema;
+const { orders, products, variants, variantSizes } = schema;
 
 /** Commandes qui comptent dans les ventes : ni annulées, ni refusées, ni retournées. */
 const counted = notInArray(orders.status, [...LOST_STATUSES]);
+/** Orders deleted from the dashboard (soft deletion) are left out of every figure. */
+const visible = isNull(orders.deletedAt);
 
 /**
  * Paires vendues d'un coloris (commandes comptées). Table names are explicit: Drizzle leaves
@@ -17,7 +19,7 @@ const counted = notInArray(orders.status, [...LOST_STATUSES]);
  */
 const lost = sql.raw(LOST_STATUSES.map((s) => `'${s}'`).join(", "));
 const pairsSold = sql<number>`coalesce((select sum(oi.quantity) from order_items oi join orders o on o.id = oi.order_id
-  where oi.variant_id = "variants"."id" and o.status not in (${lost})), 0)::int`;
+  where oi.variant_id = "variants"."id" and o.status not in (${lost}) and o.deleted_at is null), 0)::int`;
 const firstImage = sql<string | null>`(select pi.url from product_images pi where pi.variant_id = "variants"."id" order by pi.position limit 1)`;
 
 /** Téléphone réduit à ses chiffres significatifs : « 06 12… » et « +212 6 12… » sont le même client. */
@@ -33,7 +35,7 @@ export const getDashboardStats = async () => {
     aEncaisser: sql<number>`coalesce(sum(${orders.total}) filter (where ${orders.status} = 'livree' and ${orders.paymentStatus} = 'a-encaisser'), 0)::int`,
     encaisse: sql<number>`coalesce(sum(coalesce(${orders.amountReceived}, ${orders.total})) filter (where ${orders.paymentStatus} = 'encaisse'), 0)::int`,
     clients: sql<number>`count(distinct ${phoneKey})::int`,
-  }).from(orders);
+  }).from(orders).where(visible);
   const panierMoyen = row.commandesComptees > 0 ? Math.round(row.chiffreAffaires / row.commandesComptees) : 0;
   return { ...row, panierMoyen };
 };
@@ -41,7 +43,7 @@ export const getDashboardStats = async () => {
 export const getRecentOrders = (limit: number) => getDb().select({
   id: orders.id, number: orders.orderNumber, customerName: orders.customerName, city: orders.city,
   createdAt: orders.createdAt, status: orders.status, total: orders.total,
-}).from(orders).orderBy(desc(orders.createdAt), desc(orders.id)).limit(limit);
+}).from(orders).where(visible).orderBy(desc(orders.createdAt), desc(orders.id)).limit(limit);
 
 /** Paires vendues par coloris (commandes comptées), tous coloris affichés même à zéro. */
 export const getSalesByVariant = () => getDb().select({
@@ -74,7 +76,7 @@ export const listCustomers = async ({ q, page }: { q?: string; page: number }) =
     total: sql<number>`coalesce(sum(${orders.total}) filter (where ${counted}), 0)::int`.as("total"),
     premiere: sql<Date>`min(${orders.createdAt})`.as("premiere"),
     derniere: sql<Date>`max(${orders.createdAt})`.as("derniere"),
-  }).from(orders).groupBy(phoneKey).as("c");
+  }).from(orders).where(visible).groupBy(phoneKey).as("c");
 
   const like = q ? `%${q.replace(/[%_\\]/g, "\\$&")}%` : null;
   const digits = q?.replace(/\D/g, "") ?? "";
@@ -97,6 +99,7 @@ export const listCatalog = async () => {
     db.select({
       id: variants.id, slug: variants.slug, name: variants.colorName, hex: variants.colorHex,
       price: variants.price, oldPrice: variants.oldPrice, active: variants.active, position: variants.position,
+      gender: variants.gender, productId: variants.productId,
       image: firstImage,
       photoCount: sql<number>`(select count(*) from product_images pi where pi.variant_id = "variants"."id")::int`,
       sold: pairsSold,
@@ -110,3 +113,8 @@ export const listCatalog = async () => {
   }));
 };
 export type CatalogVariant = Awaited<ReturnType<typeof listCatalog>>[number];
+
+/** Models (Cloudtilt…) with their brand, for the categories of the Products page. */
+export const listModels = () => getDb().select({ id: products.id, name: products.name, brand: products.brand })
+  .from(products).orderBy(asc(products.id));
+export type CatalogModel = Awaited<ReturnType<typeof listModels>>[number];

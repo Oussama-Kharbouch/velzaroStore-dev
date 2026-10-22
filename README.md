@@ -74,12 +74,14 @@ Adresse : **`/ALLAH`** (définie par `ADMIN_PATH` dans [lib/site.ts](lib/site.ts
 | Page | Contenu |
 | --- | --- |
 | Tableau de bord | Chiffre d'affaires, panier moyen, commandes, à confirmer, à encaisser, clients, dernières commandes, ventes par coloris, stocks à surveiller |
-| Commandes | Compteurs par statut, recherche (référence, nom, téléphone sous tous ses formats, ville), filtres par statut et par période, pagination, contact WhatsApp, suppression définitive (corbeille) |
+| Commandes | Compteurs par statut, recherche (référence, nom, téléphone sous tous ses formats, ville), filtres par statut et par période, pagination, contact WhatsApp, suppression (corbeille, avec confirmation) |
 | Fiche commande | Frise d'avancement, étape suivante en un clic, livreur et n° de suivi, encaissement avec frais du livreur, annulation / refus / retour avec motif, correction manuelle du statut, historique et notes internes, message WhatsApp prérempli selon l'étape |
-| Produits | Par coloris : prix, prix barré, en ligne / masqué, stock par pointure, paires vendues, ordre d'affichage ; fiche complète (nom, nom arabe, couleur, 6 photos), ajout et suppression d'un brouillon |
+| Produits | Marque du modèle ; filtres par catégorie (On Homme, On Femme, Unisexe, Non classés) et par statut ; par coloris : catégorie, prix, prix barré, en ligne / masqué, stock par pointure, paires vendues, ordre d'affichage ; fiche complète (nom, nom arabe, couleur, 6 photos), ajout et suppression d'un brouillon |
 | Clients | Clients regroupés par téléphone : commandes, total dépensé, dernière commande, accès à leurs commandes et à WhatsApp |
 
-Une vente qui n'aboutit pas est annulée, refusée ou retournée : elle reste dans l'historique et les statistiques. La **corbeille** de la liste des commandes supprime définitivement une commande (essai, doublon, fausse commande) après confirmation, avec ses lignes, son historique et ses notes ; si elle n'était pas annulée, ses paires suivies en stock y retournent. La suppression envoie la référence affichée à l'écran : une autre commande ne peut pas partir à sa place. Les changements de statut sont protégés contre le double clic (refusés si la commande a changé entre-temps).
+Une vente qui n'aboutit pas est annulée, refusée ou retournée : elle reste dans l'historique et les statistiques. La **corbeille** de la liste des commandes (essai, doublon, fausse commande) ouvre une fenêtre de confirmation, puis fait une **suppression logique** : la commande reçoit une date `deleted_at` et disparaît de la liste, des compteurs, du tableau de bord, des statistiques et des clients, mais ses lignes, son historique et ses notes restent en base (avec une entrée « suppression » dans l'historique) ; elle ne peut plus être modifiée. Si elle n'était pas annulée, ses paires suivies en stock y retournent. La suppression envoie la référence affichée à l'écran : une autre commande ne peut pas partir à sa place. Les changements de statut sont protégés contre le double clic (refusés si la commande a changé entre-temps).
+
+**Catégories** : la marque se saisit sur le modèle (« On »), la catégorie sur chaque coloris (Homme, Femme, Unisexe ; vide = « Non classé »). Rien n'est classé automatiquement. Ces catégories servent au dashboard ; la boutique n'en dépend pas.
 
 **Ordre d'affichage** : panneau « Ordre sur la boutique » en haut de la page Produits — glisser-déposer (ordinateur) ou flèches (téléphone), puis « Enregistrer l'ordre ». L'ordre vaut pour l'accueil, la boutique et les vignettes de coloris.
 

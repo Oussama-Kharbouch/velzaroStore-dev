@@ -10,7 +10,7 @@
  * effacer : essais, doublons, fausses commandes.
  */
 import "server-only";
-import { and, eq, gte, isNotNull, sql } from "drizzle-orm";
+import { and, eq, gte, isNotNull, isNull, sql } from "drizzle-orm";
 import { z } from "zod";
 import { getDb, schema } from "../../db";
 import { firstIssue, ko, ok, type Result } from "../admin/respond";
@@ -77,10 +77,10 @@ export const changeOrderStatus = async (id: number, payload: unknown): Promise<R
         ...(shippedAt !== undefined ? { shippedAt } : {}),
         ...(deliveredAt !== undefined ? { deliveredAt } : {}),
         ...(to === "expediee" && (carrier || trackingNumber) ? { carrier, trackingNumber } : {}),
-      }).where(and(eq(orders.id, id), eq(orders.status, from))).returning({ id: orders.id });
+      }).where(and(eq(orders.id, id), eq(orders.status, from), isNull(orders.deletedAt))).returning({ id: orders.id });
 
       if (updated.length === 0) {
-        const [current] = await tx.select({ status: orders.status }).from(orders).where(eq(orders.id, id)).limit(1);
+        const [current] = await tx.select({ status: orders.status }).from(orders).where(and(eq(orders.id, id), isNull(orders.deletedAt))).limit(1);
         if (!current) return ko("Cette commande n'existe pas.");
         return ko(`La commande est déjà « ${ORDER_STATUS_INFO[current.status].label} » : la page a été mise à jour, vérifiez avant de recommencer.`);
       }
@@ -126,20 +126,29 @@ export const changeOrderStatus = async (id: number, payload: unknown): Promise<R
 };
 
 /**
- * Suppression définitive d'une commande, avec ses lignes, son historique et ses notes
- * (ON DELETE CASCADE). Corps : { number } — la référence affichée au moment du clic,
- * pour ne jamais supprimer une autre commande que celle confirmée à l'écran.
+ * Suppression d'une commande depuis la corbeille du dashboard : suppression LOGIQUE.
+ * La commande reçoit une date de suppression (orders.deleted_at) et disparaît de tous les
+ * écrans et des statistiques ; ses lignes, son historique et ses notes restent en base,
+ * avec une entrée « suppression » dans l'historique.
+ * Corps : { number } — la référence affichée au moment du clic, pour ne jamais supprimer
+ * une autre commande que celle confirmée à l'écran.
  * Une commande encore en cours avait pris ses paires dans le stock suivi : elles y
  * retournent. Une commande annulée, refusée ou retournée les a déjà rendues.
  */
-export const deleteOrder = async (id: number, payload: unknown): Promise<Result<{ id: number; restocked: number }>> => {
+export const deleteOrder = async (id: number, payload: unknown): Promise<Result<{ id: number; number: string; restocked: number }>> => {
   const parsed = z.object({ number: z.string().trim().min(1, "Référence manquante.") }).safeParse(payload);
   if (!parsed.success) return firstIssue(parsed.error);
 
   return getDb().transaction(async (tx) => {
-    const [order] = await tx.select({ number: orders.orderNumber, status: orders.status }).from(orders).where(eq(orders.id, id)).limit(1);
-    if (!order) return ko("Cette commande n'existe plus : la liste a été mise à jour.");
+    const [order] = await tx.select({ number: orders.orderNumber, status: orders.status, deletedAt: orders.deletedAt })
+      .from(orders).where(and(eq(orders.id, id), isNull(orders.deletedAt))).limit(1);
+    if (!order || order.deletedAt) return ko("Cette commande n'existe plus : la liste a été mise à jour.");
     if (order.number !== parsed.data.number) return ko("La référence ne correspond pas : rechargez la page avant de recommencer.");
+
+    // Only an order still visible is marked: a double click cannot delete twice (nor restock twice).
+    const marked = await tx.update(orders).set({ deletedAt: sql`now()`, updatedAt: sql`now()` })
+      .where(and(eq(orders.id, id), isNull(orders.deletedAt))).returning({ id: orders.id });
+    if (!marked.length) return ko("Cette commande vient d'être supprimée.");
 
     let restocked = 0;
     if (!isClosing(order.status)) {
@@ -152,8 +161,12 @@ export const deleteOrder = async (id: number, payload: unknown): Promise<Result<
         if (r.length) restocked += line.quantity;
       }
     }
-    await tx.delete(orders).where(eq(orders.id, id));
-    return ok({ id, restocked });
+    await tx.insert(orderEvents).values({
+      orderId: id, kind: "suppression", createdAt: sql`now()`,
+      message: ["Commande supprimée depuis le dashboard (données conservées).",
+        restocked ? `${restocked} paire${restocked > 1 ? "s" : ""} remise${restocked > 1 ? "s" : ""} en stock.` : ""].filter(Boolean).join("\n"),
+    });
+    return ok({ id, number: order.number, restocked });
   });
 };
 
@@ -166,7 +179,7 @@ export const addOrderNote = async (id: number, payload: unknown): Promise<Result
   if (!parsed.success) return firstIssue(parsed.error);
 
   const db = getDb();
-  const [order] = await db.select({ id: orders.id }).from(orders).where(eq(orders.id, id)).limit(1);
+  const [order] = await db.select({ id: orders.id }).from(orders).where(and(eq(orders.id, id), isNull(orders.deletedAt))).limit(1);
   if (!order) return ko("Cette commande n'existe pas.");
 
   await db.insert(orderEvents).values({ orderId: id, kind: "note", message: parsed.data.message });
@@ -193,7 +206,7 @@ export const recordOrderPayment = async (id: number, payload: unknown): Promise<
   const input = parsed.data;
 
   return getDb().transaction(async (tx) => {
-    const [order] = await tx.select({ status: orders.status, total: orders.total }).from(orders).where(eq(orders.id, id)).limit(1);
+    const [order] = await tx.select({ status: orders.status, total: orders.total }).from(orders).where(and(eq(orders.id, id), isNull(orders.deletedAt))).limit(1);
     if (!order) return ko("Cette commande n'existe pas.");
     const now = sql`now()`;
 
@@ -203,7 +216,7 @@ export const recordOrderPayment = async (id: number, payload: unknown): Promise<
       const received = order.total - input.fees;
       const updated = await tx.update(orders).set({
         paymentStatus: "encaisse", paidAt: now, collectionFees: input.fees, amountReceived: received, updatedAt: now,
-      }).where(and(eq(orders.id, id), eq(orders.paymentStatus, "a-encaisser"))).returning({ id: orders.id });
+      }).where(and(eq(orders.id, id), eq(orders.paymentStatus, "a-encaisser"), isNull(orders.deletedAt))).returning({ id: orders.id });
       if (updated.length === 0) return ko("Le paiement est déjà enregistré comme encaissé.");
       await tx.insert(orderEvents).values({
         orderId: id, kind: "payment", createdAt: now,
@@ -215,7 +228,7 @@ export const recordOrderPayment = async (id: number, payload: unknown): Promise<
 
     const updated = await tx.update(orders).set({
       paymentStatus: "a-encaisser", paidAt: null, collectionFees: 0, amountReceived: null, updatedAt: now,
-    }).where(and(eq(orders.id, id), eq(orders.paymentStatus, "encaisse"))).returning({ id: orders.id });
+    }).where(and(eq(orders.id, id), eq(orders.paymentStatus, "encaisse"), isNull(orders.deletedAt))).returning({ id: orders.id });
     if (updated.length === 0) return ko("Le paiement n'est pas enregistré comme encaissé.");
     await tx.insert(orderEvents).values({
       orderId: id, kind: "payment", createdAt: now, message: "Correction : encaissement annulé, paiement de nouveau à encaisser.",

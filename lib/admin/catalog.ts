@@ -14,6 +14,7 @@ import { and, asc, count, eq, ilike, max, ne } from "drizzle-orm";
 import { z } from "zod";
 import { getDb, schema } from "../../db";
 import { SIZES } from "../catalog.mjs";
+import { GENDERS } from "../catalog-categories";
 import { isImageRef, slugify } from "../media/rules";
 import { imageUrl } from "../r2";
 import { firstIssue, ko, ok, type Result } from "./respond";
@@ -172,6 +173,24 @@ export const saveVariant = async (id: number, payload: unknown): Promise<Result<
 };
 
 /* --- Ordre d'affichage et suppression ----------------------------------------- */
+
+/* --- Catégories : marque du modèle et genre du coloris ------------------------ */
+
+/** Category of a colourway. Body: { gender: "homme" | "femme" | "unisexe" | null } (null = non classé). */
+export const setVariantGender = async (id: number, payload: unknown): Promise<Result<{ id: number }>> => {
+  const parsed = z.object({ gender: z.enum(GENDERS, { errorMap: () => ({ message: "Catégorie inconnue." }) }).nullable() }).safeParse(payload);
+  if (!parsed.success) return firstIssue(parsed.error);
+  const updated = await getDb().update(variants).set({ gender: parsed.data.gender }).where(eq(variants.id, id)).returning({ id: variants.id });
+  return updated.length ? ok({ id }) : ko("Ce coloris n'existe pas.");
+};
+
+/** Brand of a model (« On »). Body: { brand } — empty = no brand. */
+export const setProductBrand = async (id: number, payload: unknown): Promise<Result<{ id: number }>> => {
+  const parsed = z.object({ brand: z.string().trim().max(40, "Marque : 40 caractères maximum.") }).safeParse(payload);
+  if (!parsed.success) return firstIssue(parsed.error);
+  const updated = await getDb().update(products).set({ brand: parsed.data.brand || null }).where(eq(products.id, id)).returning({ id: products.id });
+  return updated.length ? ok({ id }) : ko("Ce modèle n'existe pas.");
+};
 
 /**
  * Whole display order of the shop at once. Body: { ids } — every colourway, first shown first.

@@ -801,6 +801,42 @@ body:has(.ad) { margin: 0; }
 .vz-order button:disabled { opacity: .35; cursor: default; }
 .vz-order svg { width: 15px; height: 15px; }
 
+/* Categories of the Products page: brand of the model, filters, category of a colourway. */
+.vz-product { flex-wrap: wrap; justify-content: space-between; }
+.vz-brand { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 10px; }
+.vz-brand .ad-field { width: 180px; }
+.vz-brand .vz-saved, .vz-brand .ord-error { flex-basis: 100%; }
+.vz-filters { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 10px; margin: 0 0 16px; }
+.vz-filter-group { display: flex; flex-wrap: wrap; gap: 6px; }
+.vz-chip { display: inline-flex; align-items: center; gap: 7px; min-height: 36px; padding: 6px 13px; border: 1px solid var(--ad-line); border-radius: 999px; background: #fff; color: var(--ad-text); font-size: 13px; font-weight: 600; text-decoration: none; }
+.vz-chip span { color: var(--ad-muted); font-size: 12px; font-weight: 600; }
+.vz-chip:hover { border-color: var(--gold); }
+.vz-chip.is-active { border-color: #111; background: #111; color: #fff; }
+.vz-chip.is-active span { color: var(--gold); }
+.vz-category { margin-bottom: 12px; }
+.vz-category select.is-empty { border-color: #e6d9c2; background: #fdf8f0; color: #7a5a22; }
+@media (max-width: 600px) {
+  .vz-brand, .vz-brand .ad-field { width: 100%; }
+  .vz-brand .ad-btn { flex: 1; justify-content: center; }
+  .vz-filters { flex-direction: column; }
+  .vz-filter-group { flex-wrap: nowrap; overflow-x: auto; padding-bottom: 2px; }
+  .vz-chip { flex-shrink: 0; }
+}
+
+/* Confirmation window (components/admin/confirm-dialog.tsx). */
+.ad-btn-danger { border-color: var(--ad-red); background: var(--ad-red); color: #fff; }
+.ad-btn-danger:hover:not(:disabled) { border-color: #8f1e18; background: #8f1e18; color: #fff; }
+.ad-dialog { width: min(440px, calc(100vw - 32px)); padding: 0; border: 1px solid var(--ad-line); border-radius: var(--ad-radius); background: var(--ad-panel); color: var(--ad-text); box-shadow: 0 24px 60px rgba(0, 0, 0, .25); }
+.ad-dialog::backdrop { background: rgba(17, 17, 17, .55); }
+.ad-dialog-body { padding: 24px 24px 8px; }
+.ad-dialog-icon { display: grid; width: 42px; height: 42px; margin-bottom: 14px; place-items: center; border-radius: 50%; background: #fdf1f0; color: var(--ad-red); }
+.ad-dialog-icon svg { width: 20px; height: 20px; }
+.ad-dialog h2 { margin: 0 0 10px; font-size: 20px; }
+.ad-dialog-text p { margin: 0 0 10px; color: var(--ad-muted); font-size: 13.5px; line-height: 1.55; }
+.ad-dialog-text .ad-dialog-order { padding: 10px 12px; border: 1px solid #e6d9c2; border-radius: 8px; background: #fdf8f0; color: var(--ad-text); }
+.ad-dialog-foot { display: flex; justify-content: flex-end; gap: 10px; padding: 14px 24px 22px; }
+@media (max-width: 600px) { .ad-dialog-foot .ad-btn { flex: 1; justify-content: center; } }
+
 /* "Ordre sur la boutique": compact list, reordered by drag and drop or with the arrows. */
 .vz-sort { margin-bottom: 18px; padding-bottom: 18px; }
 .vz-sort-list { display: grid; gap: 6px; margin: 16px 20px 0; padding: 0; list-style: none; }

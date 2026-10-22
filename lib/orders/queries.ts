@@ -1,6 +1,6 @@
 /** Lectures des commandes pour le dashboard. */
 import "server-only";
-import { and, asc, count, desc, eq, ilike, inArray, or, sql, type SQL } from "drizzle-orm";
+import { and, asc, count, desc, eq, ilike, inArray, isNull, or, sql, type SQL } from "drizzle-orm";
 import { getDb, schema } from "../../db";
 import { imageUrl } from "../r2";
 import { ORDER_STATUSES, type OrderStatus, type PaymentStatus } from "./status";
@@ -50,7 +50,8 @@ export const listOrders = async ({ q, status, period, page }: {
   q?: string; status?: OrderStatus; period?: OrderPeriod; page: number;
 }) => {
   const db = getDb();
-  const base = [q ? searchCondition(q) : undefined, period ? periodCondition(period) : undefined].filter(Boolean) as SQL[];
+  // Orders deleted from the dashboard (soft deletion) are never listed nor counted.
+  const base = [isNull(orders.deletedAt), q ? searchCondition(q) : undefined, period ? periodCondition(period) : undefined].filter(Boolean) as SQL[];
   const where = and(...base, status ? eq(orders.status, status) : undefined);
 
   const [countRows, [{ total }]] = await Promise.all([
@@ -79,7 +80,7 @@ export type OrderEvent = typeof orderEvents.$inferSelect;
 
 export const getOrderDetail = async (id: number) => {
   const db = getDb();
-  const [order] = await db.select().from(orders).where(eq(orders.id, id)).limit(1);
+  const [order] = await db.select().from(orders).where(and(eq(orders.id, id), isNull(orders.deletedAt))).limit(1);
   if (!order) return null;
 
   const [lines, events] = await Promise.all([
@@ -96,6 +97,6 @@ export type OrderDetail = NonNullable<Awaited<ReturnType<typeof getOrderDetail>>
 
 /** Commandes « À confirmer » : pastille du menu. */
 export const countPendingOrders = async () => {
-  const [row] = await getDb().select({ n: count() }).from(orders).where(inArray(orders.status, ["en-attente"]));
+  const [row] = await getDb().select({ n: count() }).from(orders).where(and(inArray(orders.status, ["en-attente"]), isNull(orders.deletedAt)));
   return row?.n ?? 0;
 };

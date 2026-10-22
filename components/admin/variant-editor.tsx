@@ -8,6 +8,7 @@ import { ADMIN_PATH } from "../../lib/site";
 import { formatDH } from "../../lib/admin/format";
 import type { CatalogVariant } from "../../lib/admin/queries";
 import { StockCell } from "./bits";
+import { GENDERS, categoryLabel, isGender, type Gender } from "../../lib/catalog-categories";
 
 const toNumber = (value: string) => (value.trim() === "" ? null : Number(value.trim()));
 
@@ -16,7 +17,7 @@ const toNumber = (value: string) => (value.trim() === "" ? null : Number(value.t
  * Stock vide = non suivi : la pointure reste toujours commandable.
  * La boutique, rendue à chaque visite, montre la modification aussitôt.
  */
-export default function VariantEditor({ variant }: { variant: CatalogVariant }) {
+export default function VariantEditor({ variant, brand }: { variant: CatalogVariant; brand: string | null }) {
   const router = useRouter();
   const lock = useRef(false);
   const [refreshing, startRefresh] = useTransition();
@@ -33,6 +34,36 @@ export default function VariantEditor({ variant }: { variant: CatalogVariant }) 
     || active !== variant.active
     || stocks.some((s, i) => s.value !== (variant.sizes[i].stock === null ? "" : String(variant.sizes[i].stock)));
   const busy = sending || refreshing;
+  const [gender, setGender] = useState<Gender | null>(variant.gender);
+  const [classifying, setClassifying] = useState(false);
+
+  /** Category: saved as soon as it is chosen (independent of the price / stock form). */
+  const classify = async (next: Gender | null) => {
+    const previous = gender;
+    setGender(next);
+    setClassifying(true);
+    setMessage(null);
+    try {
+      const response = await fetch(`/api/admin/variants/${variant.id}/category`, {
+        method: "PATCH", headers: { "content-type": "application/json" }, body: JSON.stringify({ gender: next }),
+      });
+      const data = (await response.json().catch(() => ({
+        ok: false, erreur: response.status === 401 ? "Session expirée : reconnectez-vous." : `Le serveur a répondu ${response.status}.`,
+      }))) as { ok: boolean; erreur?: string };
+      if (data.ok) {
+        setMessage({ tone: "success", text: `Catégorie : ${categoryLabel(brand, next)}.` });
+        startRefresh(() => router.refresh());
+      } else {
+        setGender(previous);
+        setMessage({ tone: "error", text: data.erreur ?? "Catégorie non enregistrée." });
+      }
+    } catch {
+      setGender(previous);
+      setMessage({ tone: "error", text: "Le serveur n’a pas répondu : catégorie non enregistrée." });
+    } finally {
+      setClassifying(false);
+    }
+  };
 
   const save = async () => {
     if (lock.current) return;
@@ -88,6 +119,14 @@ export default function VariantEditor({ variant }: { variant: CatalogVariant }) 
       </div>
 
       <div className="vz-variant-body">
+        <label className="ad-field vz-category">
+          <span className="ord-field-label">Catégorie</span>
+          <select className={gender ? "" : "is-empty"} value={gender ?? ""} disabled={classifying || busy}
+            onChange={(e) => classify(isGender(e.target.value) ? e.target.value : null)} aria-label={`Catégorie de ${variant.name}`}>
+            <option value="">Non classé</option>
+            {GENDERS.map((g) => <option key={g} value={g}>{categoryLabel(brand, g)}</option>)}
+          </select>
+        </label>
         <div className="vz-prices">
           <label className="ad-field">
             <span className="ord-field-label">Prix de vente (DH)</span>

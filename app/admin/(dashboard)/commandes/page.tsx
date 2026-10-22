@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Eye } from "lucide-react";
-import { EmptyState, OrderStatusBadge, PaymentBadge } from "../../../../components/admin/bits";
+import { Alert, EmptyState, OrderStatusBadge, PaymentBadge } from "../../../../components/admin/bits";
 import AdminHeader from "../../../../components/admin/header";
 import ListToolbar from "../../../../components/admin/list-toolbar";
 import Pagination from "../../../../components/admin/pagination";
@@ -16,7 +16,7 @@ import { ADMIN_PATH } from "../../../../lib/site";
 
 export const metadata: Metadata = { title: "Commandes" };
 
-type Params = Promise<{ q?: string; statut?: string; periode?: string; page?: string }>;
+type Params = Promise<{ q?: string; statut?: string; periode?: string; page?: string; supprimee?: string; stock?: string }>;
 
 export default async function OrdersPage({ searchParams }: { searchParams: Params }) {
   const raw = await searchParams;
@@ -34,6 +34,15 @@ export default async function OrdersPage({ searchParams }: { searchParams: Param
 
       <div className="ad-content ord-list-page">
         <p className="ord-subtitle">Suivez vos commandes et contactez vos clients.</p>
+
+        {raw.supprimee && (
+          <div className="ord-result">
+            <Alert tone="success">
+              Commande <strong>{raw.supprimee.slice(0, 40)}</strong> supprimée. Elle n’apparaît plus dans le dashboard ; ses données restent conservées.
+              {Number(raw.stock) > 0 && <> {Number(raw.stock)} paire{Number(raw.stock) > 1 ? "s" : ""} remise{Number(raw.stock) > 1 ? "s" : ""} en stock.</>}
+            </Alert>
+          </div>
+        )}
 
         <StatusCounters counts={list.counts} active={status} query={{ q, periode: period }}/>
 
