@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { TriangleAlert } from "lucide-react";
-import WhatsappIcon from "../whatsapp-icon";
+import WhatsappIcon from "../../whatsapp-icon";
 import { whatsappLink } from "../../../lib/orders/whatsapp";
 
 /**

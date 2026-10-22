@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import Store from "../../store";
 import { getStoreCatalog, getStoreMedia } from "../../../../lib/store-catalog";
+import { shopLang } from "../../../../lib/shop-lang";
 
 /**
  * Product page: /cloudtilt/<colourway> (e.g. /cloudtilt/white-black). The folder name is
@@ -23,5 +24,5 @@ export default async function ProductPage({ params }: { params: Params }) {
   const catalog = await getStoreCatalog();
   // Unknown or hidden colourway (old link): back to the shop rather than an error page.
   if (!catalog.some((p) => p.id === variant)) redirect("/boutique");
-  return <Store catalog={catalog} media={getStoreMedia()} initialProductId={variant}/>;
+  return <Store catalog={catalog} media={getStoreMedia()} initialLang={await shopLang()} initialProductId={variant}/>;
 }

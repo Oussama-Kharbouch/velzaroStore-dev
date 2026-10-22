@@ -7,7 +7,7 @@ import ListToolbar from "../../../../components/admin/list-toolbar";
 import Pagination from "../../../../components/admin/pagination";
 import DeleteOrderButton from "../../../../components/admin/orders/delete-order-button";
 import StatusCounters from "../../../../components/admin/status-counters";
-import WhatsappIcon from "../../../../components/admin/whatsapp-icon";
+import WhatsappIcon from "../../../../components/whatsapp-icon";
 import { formatDH, formatShortDate } from "../../../../lib/admin/format";
 import { ORDERS_PER_PAGE, ORDER_PERIODS, isOrderPeriod, listOrders } from "../../../../lib/orders/queries";
 import { ORDER_STATUSES, ORDER_STATUS_INFO, isOrderStatus } from "../../../../lib/orders/status";

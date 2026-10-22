@@ -9,5 +9,11 @@ export const ADMIN_PATH: string = "/ALLAH";
 /** Public address of the shop, for absolute links given to other services (Meta catalogue feed). */
 export const SITE_URL = "https://prestigea.shop";
 
+/**
+ * WhatsApp number receiving the customers' questions (floating button of the shop), in
+ * international format without "+" or spaces (07 08 76 18 04 → 212708761804). Empty = button hidden.
+ */
+export const SHOP_WHATSAPP: string = "212708761804";
+
 /** Prix en dirhams, sans centime : le catalogue est en entiers. */
 export const formatDH = (value: number) => `${value.toLocaleString("fr-FR")} DH`;

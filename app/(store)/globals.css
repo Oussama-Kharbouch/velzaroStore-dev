@@ -372,3 +372,8 @@ html[dir=rtl] .prestige-detail .detail-price{justify-content:flex-end}
 .card.sold-out .card-actions .btn:disabled,.product-actions .btn:disabled{opacity:.35;cursor:not-allowed}
 .sold-out-badge{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);z-index:1;pointer-events:none;background:rgba(22,22,22,.82);color:#fff;padding:6px 12px;border-radius:5px;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;white-space:nowrap}
 .sold-out-note{margin:6px 0 0;color:var(--grey);font-weight:600}
+/* WhatsApp button for customers' questions: bottom corner (right in French, left in Arabic), above the mobile bar. */
+.whatsapp-float{position:fixed;z-index:70;bottom:24px;inset-inline-end:24px;display:grid;place-items:center;width:56px;height:56px;border-radius:50%;background:#25d366;color:#fff;box-shadow:0 6px 18px rgba(0,0,0,.2);transition:transform .2s}
+.whatsapp-float:hover{transform:scale(1.06)}
+.whatsapp-float svg{width:30px;height:30px}
+@media(max-width:600px){.whatsapp-float{bottom:calc(67px + env(safe-area-inset-bottom) + 14px);inset-inline-end:16px;width:52px;height:52px}.whatsapp-float svg{width:28px;height:28px}}

@@ -4,7 +4,7 @@ import { EmptyState } from "../../../../components/admin/bits";
 import AdminHeader from "../../../../components/admin/header";
 import ListToolbar from "../../../../components/admin/list-toolbar";
 import Pagination from "../../../../components/admin/pagination";
-import WhatsappIcon from "../../../../components/admin/whatsapp-icon";
+import WhatsappIcon from "../../../../components/whatsapp-icon";
 import { formatDH, formatShortDate } from "../../../../lib/admin/format";
 import { CUSTOMERS_PER_PAGE, listCustomers } from "../../../../lib/admin/queries";
 import { whatsappLink } from "../../../../lib/orders/whatsapp";
