@@ -105,6 +105,15 @@ Les `content_ids` sont les identifiants du catalogue Meta (`cloudtilt-<coloris>`
 
 Données client de l'achat (« Advanced Matching ») : prénom, nom, téléphone (`212…`), ville et pays (`ma`), normalisés selon les règles Meta puis **hachés en SHA-256** dans le navigateur : Meta ne reçoit que les empreintes. L'adresse n'est jamais envoyée (Meta n'a pas de champ pour la rue).
 
+**API Conversions (CAPI)** — [lib/meta/capi.ts](lib/meta/capi.ts) : chaque événement est envoyé deux fois, par le Pixel (navigateur) et par le serveur (Graph API `v26.0`), avec le **même `event_id`** : Meta les déduplique et garde les achats bloqués côté navigateur (bloqueurs de publicité, iOS).
+
+| Événement | `event_id` | Envoi serveur |
+| --- | --- | --- |
+| ViewContent, AddToCart, InitiateCheckout | `<Événement>_<horodatage>_<aléatoire>`, créé dans le navigateur ([components/meta-pixel.tsx](components/meta-pixel.tsx)) | le navigateur appelle `POST /api/meta/capi` (coloris et quantité seulement) ; **prix et montants relus dans la base** |
+| Purchase | `purchase_<n° de commande>`, créé par le serveur et renvoyé à la page | par `/api/orders` lui-même, une seule fois par commande, montants enregistrés |
+
+`user_data` : adresse IP (`cf-connecting-ip`), navigateur, cookies `_fbp` / `_fbc` (ou `fbclid` de l'adresse) ; pour l'achat, prénom, nom, téléphone, ville et pays normalisés puis hachés en SHA-256. Envoi en arrière-plan (`waitUntil`), délai de 4 s, erreurs dans les journaux du Worker : Meta ne ralentit ni ne bloque jamais une page ou une commande. Sans `META_CAPI_TOKEN`, rien n'est envoyé. `META_TEST_EVENT_CODE` envoie les événements dans « Évènements de test » du Gestionnaire d'événements.
+
 ## Scripts
 
 | Commande | Effet |
@@ -149,6 +158,8 @@ Variables à définir dans Cloudflare (Workers → velzaro-store → Settings) :
 | `R2_ACCESS_KEY_ID`, `R2_SECRET_ACCESS_KEY` | — | ✔ | Secret |
 | `R2_ACCOUNT_ID`, `R2_BUCKET`, `R2_ENDPOINT` | — | ✔ | Texte |
 | `FEED_USER`, `FEED_PASSWORD` (facultatifs) | — | ✔ | Secret |
+| `META_CAPI_TOKEN` | — | ✔ | Secret |
+| `META_TEST_EVENT_CODE` (facultatif, tests Meta) | — | ✔ | Texte |
 
 `DATABASE_URL_UNPOOLED` et `NEON_BRANCH` ne servent qu'aux migrations et scripts lancés depuis l'ordinateur.
 

@@ -1,6 +1,9 @@
 import {and,eq,gte,inArray,isNotNull,sql} from 'drizzle-orm';
 import {shippingFee} from '../../../lib/shipping';
 import {getDb,schema} from '../../../db';
+import {dispatchMetaEvent} from '../../../lib/meta/capi';
+import {customData} from '../../../lib/meta/shop-events';
+import {SITE_URL} from '../../../lib/site';
 
 const {products,variants,variantSizes,orders,orderItems,orderEvents}=schema;
 type RequestedItem={id:string;size:number;qty:number};
@@ -38,9 +41,11 @@ export async function POST(req:Request){
     // The client generates one key per checkout, so a resubmitted order is stored only once.
     const id='VZ-'+key;
 
+    let created=false;
     await db.transaction(async tx=>{
       const [order]=await tx.insert(orders).values({orderNumber:id,customerName:name,phone,city,address,subtotal,shippingFee:shipping,total}).onConflictDoNothing({target:orders.orderNumber}).returning({id:orders.id});
       if(!order)return;
+      created=true;
       await tx.insert(orderEvents).values({orderId:order.id,kind:'creation',toStatus:'en-attente',message:'Commande passée sur la boutique.'});
       await tx.insert(orderItems).values(lines.map(l=>({orderId:order.id,variantId:l.variantId,productName:l.productName,colorName:l.colorName,size:l.size,quantity:l.qty,unitPrice:l.price})));
       // Sizes with a tracked stock (not null) are decremented; the order fails if there are not enough pairs left.
@@ -49,7 +54,12 @@ export async function POST(req:Request){
         if(!updated.length)throw new OutOfStock();
       }
     });
-    return Response.json({id,total,subtotal,shipping,city},{status:201});
+    // Conversions API: the same Purchase as the pixel (same event_id, given back to the page), with
+    // the amounts saved here. Sent once, for a new order only (a resubmitted order is not resent).
+    const eventId='purchase_'+id;
+    if(created)dispatchMetaEvent({eventName:'Purchase',eventId,eventSourceUrl:req.headers.get('referer')||SITE_URL,
+      customData:customData(lines.map(l=>({slug:l.slug,qty:l.qty,price:l.price})),total,id),customer:{name,phone,city}},req.headers);
+    return Response.json({id,eventId,total,subtotal,shipping,city},{status:201});
   }catch(e){
     if(e instanceof OutOfStock)return Response.json({error:'Cette pointure n’est plus disponible.'},{status:409});
     if(!(e instanceof Error&&e.message==='article'))console.error('Order not saved:',e);

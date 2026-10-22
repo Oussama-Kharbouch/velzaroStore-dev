@@ -1,7 +1,7 @@
 "use client";
 
 // Meta (Facebook / Instagram) Pixel of VELZARO. The ID is public by nature (it appears in
-// every page), so it is written here rather than in an environment variable.
+// every page), so it is written in the code (lib/meta/normalize.ts) rather than in an environment variable.
 // Loaded by the SHOP layout only (app/(store)/layout.tsx), never on the dashboard.
 //
 // The pixel only starts on the live domains: local development, previews and tests never
@@ -9,12 +9,18 @@
 // Browsing events carry product ids, amounts and counts only. The purchase also carries the
 // customer's name, phone, city and country ("Advanced Matching", see trackPurchase), hashed in
 // the browser: Meta only receives fingerprints. The street address has no Meta field: never sent.
+//
+// Deduplication with the Conversions API (lib/meta/capi.ts): every event has an event_id, given
+// to the pixel ({ eventID }) and to the server, which sends the same event to Meta. Meta keeps one.
+// ViewContent, AddToCart, InitiateCheckout: event_id made here, server called by trackShopEvent.
+// Purchase: event_id made by the server from the order number (sent by the server itself).
 
 import Script from "next/script";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef } from "react";
+import { META_PIXEL_ID, matchingFields, sha256, type MetaCustomer } from "../lib/meta/normalize";
 
-export const META_PIXEL_ID = "991994386540162";
+export { META_PIXEL_ID };
 
 /** Hosts where the pixel is active. */
 const LIVE_HOSTS = /^(www\.)?prestigea\.shop$/;
@@ -38,28 +44,53 @@ export function trackPixel(event: string, params?: FbqParams, eventId?: string) 
   else (window.__vzPixelQueue ??= []).push(args);
 }
 
+/** event_id shared by the pixel and the Conversions API: "AddToCart_1792456978078_9f2c4b1ad03e7a65". */
+export function generateEventId(eventName: string) {
+  // getRandomValues also works on plain http pages (crypto.randomUUID does not).
+  const random = Array.from(crypto.getRandomValues(new Uint8Array(8)), (b) => b.toString(16).padStart(2, "0")).join("");
+  return `${eventName}_${Date.now()}_${random}`;
+}
+
+/**
+ * The pixel sets its _fbp (and _fbc) cookies when its script starts: the server call waits for them,
+ * 3 s at most, so that the first event of a visit (often the product reached from an ad) carries them too.
+ */
+const afterPixelCookies = (send: () => void) => {
+  const started = Date.now();
+  const tick = () => {
+    if (/(^|;\s*)_fbp=/.test(document.cookie) || Date.now() - started > 3000) send();
+    else setTimeout(tick, 150);
+  };
+  tick();
+};
+
+/** Colourways and quantities of an event: the server reads their prices in the database. */
+export type ShopEventItem = { id: string; qty: number };
+
+/**
+ * ViewContent, AddToCart or InitiateCheckout, sent twice with the same event_id: by the pixel and,
+ * through the server, by the Conversions API. The server call never blocks nor breaks the page.
+ */
+export function trackShopEvent(event: "ViewContent" | "AddToCart" | "InitiateCheckout", params: FbqParams, items: ShopEventItem[]) {
+  if (typeof window === "undefined") return;
+  const eventId = generateEventId(event);
+  trackPixel(event, params, eventId);
+  if (!LIVE_HOSTS.test(location.hostname)) return;
+  const url = location.href;
+  afterPixelCookies(() => {
+    try {
+      void fetch("/api/meta/capi", {
+        method: "POST", keepalive: true, headers: { "content-type": "application/json" },
+        body: JSON.stringify({ event_name: event, event_id: eventId, event_source_url: url, items }),
+      }).catch(() => {});
+    } catch {
+      // Tracking must never break the shop.
+    }
+  });
+}
+
 /** Customer of an order, as typed in the checkout form. */
-export type PixelCustomer = { name: string; phone: string; city: string };
-
-// Normalisation rules of Meta (otherwise the fingerprints match nobody).
-/** Names: lowercase, letters only (Arabic letters kept, in UTF-8). */
-const nameKey = (value: string) => value.normalize("NFC").toLowerCase().replace(/[^\p{L}]/gu, "");
-/** City: lowercase, no accents, spaces or punctuation ("Béni Mellal" → "benimellal"). */
-const cityKey = (value: string) =>
-  value.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^\p{L}\p{N}]/gu, "");
-/** Phone: digits with the country code, no "+" or leading 0 ("06 11 22 33 44" → "212611223344"). */
-const phoneKey = (value: string) => {
-  const digits = value.replace(/\D/g, "").replace(/^00/, "");
-  if (digits.startsWith("212")) return digits;
-  if (digits.length === 10 && digits.startsWith("0")) return "212" + digits.slice(1);
-  if (digits.length === 9) return "212" + digits;
-  return digits;
-};
-
-const sha256 = async (value: string) => {
-  const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(value));
-  return Array.from(new Uint8Array(digest), (byte) => byte.toString(16).padStart(2, "0")).join("");
-};
+export type PixelCustomer = MetaCustomer;
 
 /**
  * Matching fields of Meta (fn, ln, ph, ct, country). Hashed here when the page is secure (https);
@@ -67,17 +98,9 @@ const sha256 = async (value: string) => {
  * hashes them itself before sending (Meta never receives them in clear either way).
  */
 async function matchingData(customer: PixelCustomer): Promise<Record<string, string>> {
-  const [first = "", ...rest] = customer.name.trim().split(/\s+/);
-  const fields: Record<string, string> = {
-    fn: nameKey(first),
-    ln: nameKey(rest.join("")),
-    ph: phoneKey(customer.phone),
-    ct: cityKey(customer.city),
-    country: "ma",
-  };
   const data: Record<string, string> = {};
-  for (const [key, value] of Object.entries(fields)) {
-    if (value) data[key] = window.crypto?.subtle ? await sha256(value) : value;
+  for (const [key, value] of Object.entries(matchingFields(customer))) {
+    data[key] = window.crypto?.subtle ? await sha256(value) : value;
   }
   return data;
 }
@@ -85,6 +108,7 @@ async function matchingData(customer: PixelCustomer): Promise<Record<string, str
 /**
  * Purchase with the customer's matching data. Never throws and never delays the confirmation:
  * if hashing fails or takes more than 1 s, the purchase is sent without the customer data.
+ * `eventId` comes from the server (purchase_<order number>), which sends the same Purchase to the Conversions API.
  */
 export async function trackPurchase(customer: PixelCustomer, params: FbqParams, eventId: string) {
   if (typeof window === "undefined") return;
