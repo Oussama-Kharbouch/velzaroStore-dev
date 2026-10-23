@@ -389,7 +389,8 @@ html[dir=rtl] .checkout.purchase-popup .purchase-input input[type=tel]:placehold
 /* Product page: every colourway / model shown at once, on several rows if needed (none hidden off-screen);
    the one displayed keeps its black underline. */
 .prestige-detail .color-photos{flex-wrap:wrap;overflow:visible;row-gap:10px;scroll-snap-type:none}
-/* Product page title: brand (small, capitals) / model (big) / colourway; discount badge beside the price. */
-.prestige-detail .details .product-brand{color:#b69a6a;font-size:11px;font-weight:700;letter-spacing:1.6px;text-transform:uppercase;margin:0 0 6px}
+/* Product page title: model (big), then "Brand - colourway"; discount badge in the top-left corner of the photo. */
 .prestige-detail .details h1+.color-name{margin:2px 0 14px}
-.detail-price .detail-discount{display:inline-block;margin-inline-start:12px;padding:3px 8px;border-radius:5px;background:#fce6df;color:var(--sale);font-size:.5em;font-weight:700;line-height:1.3;vertical-align:middle;white-space:nowrap}
+.prestige-detail .color-brand{font-weight:600;color:#111}
+.gallery-viewport>.detail-discount{position:absolute;top:14px;left:14px;z-index:2;padding:5px 10px;border-radius:6px;background:#fce6df;color:var(--sale);font-size:14px;font-weight:700;line-height:1.2;pointer-events:none;direction:ltr;unicode-bidi:isolate}
+html[dir=rtl] .gallery-viewport>.detail-discount{left:auto;right:14px}

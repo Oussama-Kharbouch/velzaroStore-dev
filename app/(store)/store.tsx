@@ -159,14 +159,14 @@ export default function Store({ catalog, media, initialProductId, initialPage, i
                 <img draggable={false} style={galleryPhotoFraming[product.photoKeys[i]]} src={src} alt={product.model+' '+t(product.name)+' — '+t(galleryLabels[i])} loading={i===0?'eager':'lazy'}/>
               </div>)}
             </div>
-            <button className="heart" aria-label={t('Favoris')} aria-pressed={favorites.includes(product.id)} onClick={()=>fav(product.id)}><Heart fill={favorites.includes(product.id)?'currentColor':'none'}/></button>
+            <button className="heart" aria-label={t('Favoris')} aria-pressed={favorites.includes(product.id)} onClick={()=>fav(product.id)}><Heart fill={favorites.includes(product.id)?'currentColor':'none'}/></button>{product.oldPrice!==null&&<span className="detail-discount">-{Math.round((product.oldPrice-product.price)/product.oldPrice*100)}%</span>}
           </div>
           <div className="gallery-pagination"><span className="gallery-count" aria-live="polite">{galleryIndex+1} / {galleryImages.length}</span></div>
         </div>
         <div className="details">
           <div className="color-photos" aria-label={t('Choisir un coloris')}>{products.filter(p=>p.modelSlug===product.modelSlug).map(p=>{const photo=colorPhotoFor(p.id);return <button key={p.id} title={t(p.name)} aria-label={t(p.name)} aria-pressed={p.id===product.id} className={[p.id===product.id&&'chosen',soldOut(p)&&'sold-out'].filter(Boolean).join(' ')} onClick={()=>{setProduct(p);history.pushState(null,'',productPath(p.id));setQuery('');setColorFilter('all');window.scrollTo(0,0)}}><span className={'color-photo-frame '+(['gris-orange','blanc-gris'].includes(p.id)?'portrait-color':'')}><img src={photo} style={colorPhotoFraming[colorKeyFor(p.id)]} alt="" loading="lazy"/></span></button>})}</div>
-          {product.brand&&<p className="eyebrow product-brand">{product.brand}</p>}<h1>{product.model}</h1><p className="color-name">{t(product.name)}</p>
-          <p className="detail-price">{money(product.price)}{product.oldPrice!==null&&<> <del>{money(product.oldPrice)}</del> <span className="detail-discount">-{Math.round((product.oldPrice-product.price)/product.oldPrice*100)}%</span></>}</p>{soldOut(product)&&<p role="status" className="sold-out-note">{t('Ce coloris est épuisé.')}</p>}
+          <h1>{product.model}</h1><p className="color-name">{product.brand&&<><bdi className="color-brand">{product.brand}</bdi> - </>}<bdi>{t(product.name)}</bdi></p>
+          <p className="detail-price">{money(product.price)}{product.oldPrice!==null&&<> <del>{money(product.oldPrice)}</del></>}</p>{soldOut(product)&&<p role="status" className="sold-out-note">{t('Ce coloris est épuisé.')}</p>}
           <div className="product-options"><div className="pointure-picker">          <div className="size-label"><strong>{t('Pointure')}</strong></div>
           <div className="sizes">{product.sizes.map(({size:n,available})=><button aria-pressed={size===n} className={size===n?'chosen':''} key={n} disabled={!available||undefined} onClick={()=>{setSize(n);setNote('')}}>{n}</button>)}</div>
 </div>          <div className="product-quantity"><strong>{t('Quantité')}</strong><div className="quantity"><button disabled={quantity<=1} aria-label={t('Diminuer')} onClick={()=>setQuantity(q=>Math.max(1,q-1))}><Minus size={20}/></button><span aria-live="polite">{quantity}</span><button disabled={quantity>=10} aria-label={t('Augmenter')} onClick={()=>setQuantity(q=>Math.min(10,q+1))}><Plus size={20}/></button></div></div>
