@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Eye, EyeOff, LoaderCircle, PencilLine, Save, TriangleAlert } from "lucide-react";
 import { ADMIN_PATH } from "../../lib/site";
+import { productPath } from "../../lib/catalog.mjs";
 import { formatDH } from "../../lib/admin/format";
 import type { CatalogVariant } from "../../lib/admin/queries";
 import { StockCell } from "./bits";
@@ -106,7 +107,7 @@ export default function VariantEditor({ variant, brand }: { variant: CatalogVari
         <div className="vz-variant-title">
           <h2><span className="vz-swatch" style={{ background: variant.hex }} aria-hidden="true"/>{variant.name}</h2>
           <p>
-            <a href={`/cloudtilt/${variant.slug}`} target="_blank" rel="noopener">/cloudtilt/{variant.slug}</a>
+            <a href={productPath(variant.slug)} target="_blank" rel="noopener">{productPath(variant.slug)}</a>
             {" · "}{variant.sold} paire{variant.sold > 1 ? "s" : ""} vendue{variant.sold > 1 ? "s" : ""}
             {variant.photoCount < 6 && <span className="vz-warn"><TriangleAlert aria-hidden="true"/> {variant.photoCount}/6 photos</span>}
           </p>

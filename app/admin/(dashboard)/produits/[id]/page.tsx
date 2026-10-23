@@ -8,6 +8,7 @@ import VariantForm from "../../../../../components/admin/variant-form";
 import { getVariantForEdit } from "../../../../../lib/admin/catalog";
 import { numericId } from "../../../../../lib/admin/respond";
 import { ADMIN_PATH } from "../../../../../lib/site";
+import { productPath } from "../../../../../lib/catalog.mjs";
 
 export const metadata: Metadata = { title: "Fiche coloris" };
 
@@ -23,7 +24,7 @@ export default async function EditVariantPage({ params, searchParams }: { params
   return (
     <>
       <AdminHeader eyebrow="Cloudtilt" title={variant.colorName}>
-        {variant.active && <a className="ad-btn" href={`/cloudtilt/${variant.slug}`} target="_blank" rel="noopener"><ExternalLink/> Voir sur la boutique</a>}
+        {variant.active && <a className="ad-btn" href={productPath(variant.slug)} target="_blank" rel="noopener"><ExternalLink/> Voir sur la boutique</a>}
       </AdminHeader>
       <div className="ad-content">
         <Link className="ad-back" href={`${ADMIN_PATH}/produits`}><ArrowLeft/> Retour aux produits</Link>

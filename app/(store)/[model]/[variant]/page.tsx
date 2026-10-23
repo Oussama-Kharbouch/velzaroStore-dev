@@ -5,24 +5,27 @@ import { getStoreCatalog, getStoreMedia } from "../../../../lib/store-catalog";
 import { shopLang } from "../../../../lib/shop-lang";
 
 /**
- * Product page: /cloudtilt/<colourway> (e.g. /cloudtilt/white-black). The folder name is
- * the model slug (PRODUCT.slug in lib/catalog.mjs). Rendered on the server with the
- * product already open; the shop keeps working as a single page from there.
+ * Product page: /<model>/<colourway> (e.g. /cloudtilt/white-black, /cloudsurfer-max/gris-bleu).
+ * Rendered on the server with the product already open; the shop keeps working as a single
+ * page from there.
  */
 export const dynamic = "force-dynamic";
 
-type Params = Promise<{ variant: string }>;
+type Params = Promise<{ model: string; variant: string }>;
 
 export async function generateMetadata({ params }: { params: Params }): Promise<Metadata> {
   const { variant } = await params;
   const product = (await getStoreCatalog()).find((p) => p.id === variant);
-  return product ? { title: `Cloudtilt ${product.name} — VELZARO.store` } : {};
+  return product ? { title: `${product.model} ${product.name} — VELZARO.store` } : {};
 }
 
 export default async function ProductPage({ params }: { params: Params }) {
-  const { variant } = await params;
+  const { model, variant } = await params;
   const catalog = await getStoreCatalog();
+  const product = catalog.find((p) => p.id === variant);
   // Unknown or hidden colourway (old link): back to the shop rather than an error page.
-  if (!catalog.some((p) => p.id === variant)) redirect("/boutique");
+  if (!product) redirect("/boutique");
+  // Right colourway under another model's address: the proper one.
+  if (model !== product.modelSlug) redirect(`/${product.modelSlug}/${variant}`);
   return <Store catalog={catalog} media={getStoreMedia()} initialLang={await shopLang()} initialProductId={variant}/>;
 }

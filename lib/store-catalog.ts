@@ -6,14 +6,17 @@
 import "server-only";
 import { and, asc, eq, inArray } from "drizzle-orm";
 import { getDb, schema } from "../db";
-import { OLD_PRICE, PRICE, SIZES, legacyPhotoPaths, photoKeys, products as staticProducts, siteImages } from "./catalog.mjs";
+import { EXTRA_MODELS, OLD_PRICE, PRICE, PRODUCT, SIZES, galleryLabels, legacyPhotoPaths, photoKeys, products as staticProducts, siteImages } from "./catalog.mjs";
 import { imageKey, imageUrl, siteImageUrl } from "./r2";
 
 const { products, variants, variantSizes, productImages } = schema;
 
 export type StoreProduct = {
-  /** Slug du coloris : identifiant du panier et de l’adresse du produit (/cloudtilt/<id>). */
+  /** Slug du coloris : identifiant du panier et de l’adresse du produit (/<model>/<id>). */
   id: string;
+  /** Model name ("Cloudtilt", "Cloudsurfer Max") and slug (first part of the product address). */
+  model: string;
+  modelSlug: string;
   name: string;
   /** Nom arabe saisi dans le dashboard ; null = traduction intégrée (translations.ts). */
   nameAr: string | null;
@@ -31,15 +34,52 @@ export type StoreProduct = {
 
 /** Catalogue intégré au code, utilisé si la base ne répond pas : la boutique reste en ligne. */
 const fallbackCatalog = (): StoreProduct[] => staticProducts.map((p) => ({
-  ...p, nameAr: null, price: PRICE, oldPrice: OLD_PRICE, sizes: SIZES.map((size) => ({ size, available: true })),
+  ...p, model: PRODUCT.name, modelSlug: PRODUCT.slug, nameAr: null, price: PRICE, oldPrice: OLD_PRICE, sizes: SIZES.map((size) => ({ size, available: true })),
   photos: photoKeys[p.id].map((key, i) => siteImageUrl({ key, legacy: legacyPhotoPaths[p.id][i] })),
   photoKeys: photoKeys[p.id],
 }));
 
+/**
+ * Creates the models of EXTRA_MODELS (lib/catalog.mjs) that are missing from the database:
+ * product, one colourway (Cloudtilt price, sizes without stock tracking), its 6 photos in
+ * public/assets. Done once per Worker instance; an existing row is never modified, so the
+ * dashboard stays in charge of price, stock, photos and visibility.
+ */
+let extraModelsReady = false;
+async function ensureExtraModels(db: ReturnType<typeof getDb>) {
+  if (extraModelsReady) return;
+  const existing = await db.select({ slug: variants.slug }).from(variants)
+    .where(inArray(variants.slug, EXTRA_MODELS.map((m) => m.variant.slug)));
+  const missing = EXTRA_MODELS.filter((m) => !existing.some((e) => e.slug === m.variant.slug));
+  for (const m of missing) {
+    await db.transaction(async (tx) => {
+      await tx.insert(products).values({ name: m.name, slug: m.slug, brand: m.brand }).onConflictDoNothing({ target: products.slug });
+      const [product] = await tx.select({ id: products.id }).from(products).where(eq(products.slug, m.slug));
+      const v = m.variant;
+      const [variant] = await tx.insert(variants).values({
+        productId: product.id, slug: v.slug, colorName: v.name, colorNameAr: v.nameAr, colorHex: v.hex,
+        price: PRICE, oldPrice: OLD_PRICE, active: true, position: v.position,
+      }).onConflictDoNothing({ target: variants.slug }).returning({ id: variants.id });
+      if (!variant) return;
+      await tx.insert(productImages).values(galleryLabels.map((label, i) => ({
+        variantId: variant.id, url: `/assets/${v.folder}/${i + 1}.webp`, alt: `${m.name} ${v.name} — ${label}`, position: i + 1,
+      })));
+      await tx.insert(variantSizes).values(SIZES.map((size) => ({ variantId: variant.id, size, stock: null })));
+    });
+  }
+  extraModelsReady = true;
+}
+
 export async function getStoreCatalog(): Promise<StoreProduct[]> {
   try {
     const db = getDb();
+    try {
+      await ensureExtraModels(db);
+    } catch (error) {
+      console.error("Nouveaux modèles non créés :", error);
+    }
     const rows = await db.select({
+      model: products.name, modelSlug: products.slug,
       id: variants.id, slug: variants.slug, name: variants.colorName, nameAr: variants.colorNameAr, color: variants.colorHex,
       price: variants.price, oldPrice: variants.oldPrice,
     }).from(variants).innerJoin(products, eq(variants.productId, products.id))
@@ -57,6 +97,8 @@ export async function getStoreCatalog(): Promise<StoreProduct[]> {
 
     return rows.map((r) => ({
       id: r.slug,
+      model: r.model,
+      modelSlug: r.modelSlug,
       name: r.name,
       nameAr: r.nameAr,
       color: r.color,

@@ -7,7 +7,7 @@
  * colourway; `id` is the content_id sent by the pixel (catalogId, lib/catalog.mjs).
  * No customer data: the catalogue only.
  */
-import { PRODUCT, catalogId } from "../../../lib/catalog.mjs";
+import { catalogId } from "../../../lib/catalog.mjs";
 import { SITE_URL } from "../../../lib/site";
 import { getStoreCatalog, type StoreProduct } from "../../../lib/store-catalog";
 
@@ -20,9 +20,13 @@ const COLUMNS = [
 
 /** Same wording as the "Description" panel of the product page (app/(store)/store.tsx), colours written the Meta way. */
 const description = (p: StoreProduct) =>
-  p.id === "white-black"
+  p.modelSlug === "cloudsurfer-max"
+    ? "Une chaussure de running à amorti maximal : semelle épaisse et souple, tige en maille respirante, pour un confort longue distance au quotidien."
+    : p.modelSlug === "more-trail-v3"
+    ? "Une chaussure de trail à l’amorti Fresh Foam X épais, avec une semelle crantée Vibram pour une bonne adhérence sur tous les terrains."
+    : p.id === "white-black"
     ? "Une tige en maille ivoire contrastée par une languette et des lacets noirs. La semelle blanche sculptée souligne une silhouette moderne, facile à associer au quotidien."
-    : `${PRODUCT.name}, coloris ${metaColor(p.name)}. Une silhouette contemporaine, une tige en maille et une semelle sculptée pour compléter vos tenues du quotidien.`;
+    : `${p.model}, coloris ${metaColor(p.name)}. Une silhouette contemporaine, une tige en maille et une semelle sculptée pour compléter vos tenues du quotidien.`;
 
 const GENDER: Record<string, string> = { homme: "male", femme: "female" };
 /** Colourway in Meta's style: "Black | Ivory" → "Black/Ivory" (Meta expects "/" between colours, no "|"). */
@@ -37,14 +41,14 @@ function row(p: StoreProduct): Record<(typeof COLUMNS)[number], string> {
   const onSale = p.oldPrice !== null;
   return {
     id: catalogId(p.id),
-    item_group_id: PRODUCT.slug,
-    title: `${PRODUCT.name} – ${metaColor(p.name)}`,
+    item_group_id: p.modelSlug,
+    title: `${p.model} – ${metaColor(p.name)}`,
     description: description(p),
     availability: p.sizes.some((s) => s.available) ? "in stock" : "out of stock",
     condition: "new",
     price: money(onSale ? p.oldPrice! : p.price),
     sale_price: onSale ? money(p.price) : "",
-    link: `${SITE_URL}/${PRODUCT.slug}/${p.id}`,
+    link: `${SITE_URL}/${p.modelSlug}/${p.id}`,
     image_link: photos[0] ?? "",
     additional_image_link: photos.slice(1).join(","),
     brand: "Velzaro",
