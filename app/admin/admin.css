@@ -883,13 +883,13 @@ body:has(.ad) { margin: 0; }
 /* Colourway form: thumbnail of the product page (preview, choice among the photos, dedicated upload). */
 .vz-thumb { display: grid; grid-template-columns: 170px minmax(0, 1fr); gap: 24px; padding: 18px 20px 20px; }
 .vz-thumb-preview { display: flex; flex-direction: column; align-items: flex-start; gap: 8px; }
-.vz-thumb-square { display: grid; width: 150px; height: 150px; place-items: center; overflow: hidden; border: 1px solid var(--ad-line); border-radius: 10px; background: #f2f3f4; color: var(--ad-muted); }
-.vz-thumb-square img { width: 100%; height: 100%; object-fit: contain; mix-blend-mode: multiply; }
+.vz-thumb-square { display: grid; width: 150px; height: 150px; place-items: center; overflow: hidden; border: 1px solid var(--ad-line); border-radius: 10px; background: #fff; color: var(--ad-muted); }
+.vz-thumb-square img { width: 100%; height: 100%; object-fit: contain; }
 .vz-thumb-preview small { color: var(--ad-muted); font-size: 12px; }
 .vz-thumb-choices { display: flex; flex-direction: column; gap: 10px; min-width: 0; }
 .vz-thumb-grid { display: flex; flex-wrap: wrap; gap: 8px; }
-.vz-thumb-option { width: 72px; height: 72px; padding: 0; overflow: hidden; border: 2px solid var(--ad-line); border-radius: 8px; background: #f2f3f4; cursor: pointer; }
-.vz-thumb-option img { width: 100%; height: 100%; object-fit: contain; mix-blend-mode: multiply; }
+.vz-thumb-option { width: 72px; height: 72px; padding: 0; overflow: hidden; border: 2px solid var(--ad-line); border-radius: 8px; background: #fff; cursor: pointer; }
+.vz-thumb-option img { width: 100%; height: 100%; object-fit: contain; }
 .vz-thumb-option:hover { border-color: var(--gold); }
 .vz-thumb-option.is-chosen { border-color: #111; box-shadow: 0 0 0 1px #111; }
 .vz-thumb-empty { margin: 0; color: var(--ad-muted); font-size: 13px; }

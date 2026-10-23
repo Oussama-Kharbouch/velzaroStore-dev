@@ -61,8 +61,9 @@ export async function prepareImage(file: File): Promise<{ file: File; format: "w
 }
 
 /**
- * Colourway thumbnail: square 150×150 WebP, the product whole and centred, on the background
- * colour of the photo itself (taken from its corners), so that it matches the main image.
+ * Colourway thumbnail: square 150×150 WebP, the product whole and centred, with no added background:
+ * a transparent image (PNG/WebP) stays transparent; an opaque photo is extended with its own
+ * background colour (taken from its corners), so that no band of another colour appears.
  * Only JPG, PNG and WebP up to 5 MB; a clear message otherwise.
  */
 export async function prepareVignette(file: File): Promise<File> {
@@ -75,7 +76,7 @@ export async function prepareVignette(file: File): Promise<File> {
     throw new Error("Ce navigateur ne sait pas lire cette image. Exportez-la en JPEG ou PNG.");
   }
 
-  // Background of the photo: average of its four corners (a transparent PNG gives the light grey of the shop).
+  // Background of the photo: average of its four corners; none at all for a transparent image.
   const probe = document.createElement("canvas");
   probe.width = source.width; probe.height = source.height;
   const probeContext = probe.getContext("2d", { willReadFrequently: true });
@@ -85,14 +86,16 @@ export async function prepareVignette(file: File): Promise<File> {
     .map(([x, y]) => probeContext.getImageData(Math.max(0, x), Math.max(0, y), 1, 1).data);
   const opaque = corners.every((c) => c[3] > 200);
   const average = (i: number) => Math.round(corners.reduce((sum, c) => sum + c[i], 0) / corners.length);
-  const background = opaque ? `rgb(${average(0)}, ${average(1)}, ${average(2)})` : "#f2f3f4";
+  const background = opaque ? `rgb(${average(0)}, ${average(1)}, ${average(2)})` : null;
 
   const canvas = document.createElement("canvas");
   canvas.width = VIGNETTE_SIZE; canvas.height = VIGNETTE_SIZE;
   const context = canvas.getContext("2d");
   if (!context) throw new Error("Préparation de la vignette impossible dans ce navigateur.");
-  context.fillStyle = background;
-  context.fillRect(0, 0, VIGNETTE_SIZE, VIGNETTE_SIZE);
+  if (background) {
+    context.fillStyle = background;
+    context.fillRect(0, 0, VIGNETTE_SIZE, VIGNETTE_SIZE);
+  }
   // Whole product, centred, with a small margin.
   const margin = 8;
   const scale = Math.min((VIGNETTE_SIZE - 2 * margin) / source.width, (VIGNETTE_SIZE - 2 * margin) / source.height);
