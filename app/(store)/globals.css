@@ -394,3 +394,5 @@ html[dir=rtl] .checkout.purchase-popup .purchase-input input[type=tel]:placehold
 .prestige-detail .color-brand{font-weight:600;color:#111}
 .gallery-viewport>.detail-discount{position:absolute;top:14px;left:14px;z-index:2;padding:5px 10px;border-radius:6px;background:#fce6df;color:var(--sale);font-size:14px;font-weight:700;line-height:1.2;pointer-events:none;direction:ltr;unicode-bidi:isolate}
 html[dir=rtl] .gallery-viewport>.detail-discount{left:auto;right:14px}
+/* Discount badges (cards and product photo): "-19%" in Arabic too, the minus sign stays in front. */
+.discount-badge,.detail-discount{direction:ltr;unicode-bidi:isolate}
