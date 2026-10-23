@@ -880,6 +880,12 @@ body:has(.ad) { margin: 0; }
   .vz-model-row-go { grid-area: go; }
 }
 
+/* Colourway form: brand and name of its model (edited on the model page). */
+.vz-model-info { grid-column: 1 / -1; margin: -4px 0 4px; padding: 9px 12px; border: 1px solid #e6d9c2; border-radius: 8px; background: #fdf8f0; color: var(--ad-muted); font-size: 12.5px; }
+.vz-model-info strong { color: var(--ad-text); }
+.vz-model-info-brand { color: var(--gold); font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
+.vz-model-info a { color: var(--ad-text); font-weight: 600; text-decoration: underline; text-underline-offset: 2px; }
+
 /* Confirmation window (components/admin/confirm-dialog.tsx). */
 .ad-btn-danger { border-color: var(--ad-red); background: var(--ad-red); color: #fff; }
 .ad-btn-danger:hover:not(:disabled) { border-color: #8f1e18; background: #8f1e18; color: #fff; }

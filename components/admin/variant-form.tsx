@@ -2,6 +2,7 @@
 
 import { useRef, useState } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { ArrowLeft, ArrowRight, Eye, EyeOff, ImagePlus, LoaderCircle, RefreshCw, Save, Trash2, X } from "lucide-react";
 import { arabic } from "../../app/(store)/translations";
 import { galleryLabels, SIZES } from "../../lib/catalog.mjs";
@@ -51,7 +52,8 @@ export default function VariantForm({ variant, models, modelId }: {
   });
   const [productId, setProductId] = useState<number | null>(variant?.productId ?? modelId ?? (models.length === 1 ? models[0].id : null));
   const [gender, setGender] = useState<Gender | null>(variant?.gender ?? null);
-  const brand = models.find((m) => m.id === productId)?.brand ?? null;
+  const model = models.find((m) => m.id === productId) ?? null;
+  const brand = model?.brand ?? null;
   const [price, setPrice] = useState(String(variant?.price ?? 649));
   const [oldPrice, setOldPrice] = useState(variant ? (variant.oldPrice === null ? "" : String(variant.oldPrice)) : "799");
   const [active, setActive] = useState(variant?.active ?? false);
@@ -163,7 +165,7 @@ export default function VariantForm({ variant, models, modelId }: {
   return (
     <div className="vz-form">
       <section className="ad-panel">
-        <div className="ad-panel-head"><div><h2>Identité du coloris</h2><p>Modèle, genre, nom affiché sur la boutique (français et arabe) et couleur.</p></div></div>
+        <div className="ad-panel-head"><div><h2>Identité du coloris</h2><p>Modèle (sa marque et son nom), genre, coloris affiché sur la boutique (français et arabe) et couleur.</p></div></div>
         <div className="vz-form-grid">
           <label className="ad-field">
             <span className="ord-field-label">Modèle *</span>
@@ -172,6 +174,12 @@ export default function VariantForm({ variant, models, modelId }: {
               {models.map((m) => <option key={m.id} value={m.id}>{m.brand ? `${m.name} · ${m.brand}` : m.name}</option>)}
             </select>
           </label>
+          {model && (
+            <p className="vz-model-info">
+              Sur la boutique : <span className="vz-model-info-brand">{model.brand ?? "sans marque"}</span> / <strong>{model.name}</strong> + ce coloris.
+              {" "}<Link href={`${ADMIN_PATH}/produits/modeles/${model.id}`}>Modifier la marque ou le nom du modèle</Link>
+            </p>
+          )}
           <label className="ad-field">
             <span className="ord-field-label">Genre</span>
             <select value={gender ?? ""} onChange={(e) => setGender(isGender(e.target.value) ? e.target.value : null)} aria-label="Genre du coloris">
@@ -180,11 +188,11 @@ export default function VariantForm({ variant, models, modelId }: {
             </select>
           </label>
           <label className="ad-field">
-            <span className="ord-field-label">Nom (français) *</span>
-            <input value={name} onChange={(e) => setName(e.target.value)} maxLength={60} placeholder="Ex. Sable | Noir" aria-label="Nom du coloris"/>
+            <span className="ord-field-label">Coloris (français) *</span>
+            <input value={name} onChange={(e) => setName(e.target.value)} maxLength={60} placeholder="Ex. Black | Cayenne" aria-label="Nom du coloris"/>
           </label>
           <label className="ad-field">
-            <span className="ord-field-label">Nom (arabe)</span>
+            <span className="ord-field-label">Coloris (arabe)</span>
             <input dir="rtl" lang="ar" value={nameAr} onChange={(e) => setNameAr(e.target.value)} maxLength={60}
               placeholder="Vide = nom français" aria-label="Nom arabe du coloris"/>
           </label>
