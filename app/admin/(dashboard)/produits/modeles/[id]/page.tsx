@@ -4,7 +4,7 @@ import { notFound } from "next/navigation";
 import { ArrowLeft, ChevronRight, Plus } from "lucide-react";
 import { EmptyState } from "../../../../../../components/admin/bits";
 import AdminHeader from "../../../../../../components/admin/header";
-import BrandEditor from "../../../../../../components/admin/brand-editor";
+import ModelEditor from "../../../../../../components/admin/model-editor";
 import { categoryLabel } from "../../../../../../lib/catalog-categories";
 import { formatDH } from "../../../../../../lib/admin/format";
 import { listCatalog, listModels, type CatalogVariant } from "../../../../../../lib/admin/queries";
@@ -49,7 +49,7 @@ export default async function ModelPage({ params }: { params: Promise<{ id: stri
             <h2>{model.name}</h2>
             <p>{rows.length} coloris · {online} en ligne · {sold} paire{sold > 1 ? "s" : ""} vendue{sold > 1 ? "s" : ""}</p>
           </div>
-          <BrandEditor id={model.id} name={model.name} brand={model.brand}/>
+          <ModelEditor id={model.id} name={model.name} brand={model.brand}/>
         </section>
 
         <section className="ad-panel vz-model-rows-panel" aria-labelledby="vz-rows-title">

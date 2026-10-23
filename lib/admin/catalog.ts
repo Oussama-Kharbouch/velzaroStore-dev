@@ -226,11 +226,31 @@ export const createModel = async (payload: unknown): Promise<Result<{ id: number
 };
 
 /** Brand of a model (« On »). Body: { brand } — empty = no brand. */
-export const setProductBrand = async (id: number, payload: unknown): Promise<Result<{ id: number }>> => {
-  const parsed = z.object({ brand: z.string().trim().max(40, "Marque : 40 caractères maximum.") }).safeParse(payload);
+/**
+ * Name and/or brand of a model. Body: { name?, brand? } — empty brand = no brand.
+ * The slug (address /<model>/<colourway>, Meta catalogue ids) never changes: shared links keep working.
+ */
+export const updateModel = async (id: number, payload: unknown): Promise<Result<{ id: number }>> => {
+  const parsed = z.object({
+    name: z.string().trim().min(2, "Nom du modèle : 2 caractères minimum.").max(60, "Nom du modèle : 60 caractères maximum.").optional(),
+    brand: z.string().trim().max(40, "Marque : 40 caractères maximum.").optional(),
+  }).safeParse(payload);
   if (!parsed.success) return firstIssue(parsed.error);
-  const updated = await getDb().update(products).set({ brand: parsed.data.brand || null }).where(eq(products.id, id)).returning({ id: products.id });
-  return updated.length ? ok({ id }) : ko("Ce modèle n'existe pas.");
+  const { name, brand } = parsed.data;
+  if (name === undefined && brand === undefined) return ko("Rien à enregistrer.");
+
+  return inTransaction(async (tx) => {
+    if (name !== undefined) {
+      const same = await tx.select({ id: products.id }).from(products)
+        .where(and(ne(products.id, id), ilike(products.name, name.replace(/[%_\\]/g, "\\$&")))).limit(1);
+      if (same.length) return ko(`Un autre modèle s'appelle déjà « ${name} ».`, "name");
+    }
+    const updated = await tx.update(products).set({
+      ...(name !== undefined ? { name } : {}),
+      ...(brand !== undefined ? { brand: brand || null } : {}),
+    }).where(eq(products.id, id)).returning({ id: products.id });
+    return updated.length ? ok({ id }) : ko("Ce modèle n'existe pas.");
+  });
 };
 
 /**

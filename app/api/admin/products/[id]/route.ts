@@ -1,5 +1,5 @@
-/** Marque d'un modèle (dashboard). Corps : { brand } — vide = aucune marque. */
-import { setProductBrand } from "../../../../../lib/admin/catalog";
+/** Nom et/ou marque d'un modèle (dashboard). Corps : { name?, brand? } — marque vide = aucune. L'adresse du modèle ne change pas. */
+import { updateModel } from "../../../../../lib/admin/catalog";
 import { requireAdminApi } from "../../../../../lib/admin/guard";
 import { badId, numericId, readJson, toResponse } from "../../../../../lib/admin/respond";
 
@@ -12,5 +12,5 @@ export async function PATCH(request: Request, { params }: Context) {
   if (id === null) return badId();
   const body = await readJson(request);
   if (!body.ok) return toResponse(body);
-  return toResponse(await setProductBrand(id, body.data));
+  return toResponse(await updateModel(id, body.data));
 }
