@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ExternalLink, Plus } from "lucide-react";
+import { ChevronRight, ExternalLink, Plus } from "lucide-react";
 import { Alert, EmptyState } from "../../../../components/admin/bits";
 import AdminHeader from "../../../../components/admin/header";
-import BrandEditor from "../../../../components/admin/brand-editor";
+import ModelCreate from "../../../../components/admin/model-create";
 import VariantEditor from "../../../../components/admin/variant-editor";
 import VariantOrder from "../../../../components/admin/variant-order";
 import { CATEGORY_FILTERS, categoryLabel, isCategoryFilter, type CategoryFilter } from "../../../../lib/catalog-categories";
@@ -27,9 +27,8 @@ export default async function ProductsPage({ searchParams }: { searchParams: Par
 
   const [variants, models] = await Promise.all([listCatalog(), listModels()]);
   const brandOf = new Map(models.map((m) => [m.id, m.brand]));
-  const brand = models[0]?.brand ?? null;
-  const online = variants.filter((v) => v.active).length;
-  const sold = variants.reduce((sum, v) => sum + v.sold, 0);
+  // Filter labels carry the brand only when every model has the same one (On Homme); otherwise Homme.
+  const brand = new Set(models.map((m) => m.brand)).size === 1 ? models[0]?.brand ?? null : null;
   const unclassified = variants.filter((v) => v.gender === null).length;
 
   // Counts of each category follow the status filter, and the other way round.
@@ -49,16 +48,39 @@ export default async function ProductsPage({ searchParams }: { searchParams: Par
       </AdminHeader>
 
       <div className="ad-content">
-        {models.map((model) => (
-          <section key={model.id} className="ad-panel vz-product">
+        <section className="ad-panel vz-models" aria-labelledby="vz-models-title">
+          <div className="ad-panel-head">
             <div>
-              <p className="vz-product-eyebrow">Modèle{model.brand ? ` · ${model.brand}` : ""}</p>
-              <h2>{model.name}</h2>
-              <p>{variants.length} coloris · {online} en ligne · {sold} paire{sold > 1 ? "s" : ""} vendue{sold > 1 ? "s" : ""} · pointures 40 à 44</p>
+              <h2 id="vz-models-title">Modèles</h2>
+              <p>Cliquez sur un modèle pour voir ses coloris, en ajouter ou en modifier un.</p>
             </div>
-            <BrandEditor id={model.id} name={model.name} brand={model.brand}/>
-          </section>
-        ))}
+            <ModelCreate/>
+          </div>
+          <ul className="vz-model-cards">
+            {models.map((model) => {
+              const own = variants.filter((v) => v.productId === model.id);
+              const sold = own.reduce((sum, v) => sum + v.sold, 0);
+              return (
+                <li key={model.id}>
+                  <Link className="vz-model-card" href={`${ADMIN_PATH}/produits/modeles/${model.id}`} aria-label={`Voir les coloris de ${model.name}`}>
+                    <span className="vz-model-card-photos" aria-hidden="true">
+                      {own.slice(0, 4).map((v) => (
+                        // eslint-disable-next-line @next/next/no-img-element -- vignette du catalogue.
+                        <span key={v.id}>{v.image && <img src={v.image} alt=""/>}</span>
+                      ))}
+                    </span>
+                    <span className="vz-model-card-text">
+                      <small>{model.brand ?? "Marque non renseignée"}</small>
+                      <strong>{model.name}</strong>
+                      <span>{own.length} coloris · {own.filter((v) => v.active).length} en ligne · {sold} paire{sold > 1 ? "s" : ""} vendue{sold > 1 ? "s" : ""}</span>
+                    </span>
+                    <ChevronRight className="vz-model-row-go" aria-hidden="true"/>
+                  </Link>
+                </li>
+              );
+            })}
+          </ul>
+        </section>
 
         <div style={{ margin: "18px 0" }}>
           <Alert tone="info">

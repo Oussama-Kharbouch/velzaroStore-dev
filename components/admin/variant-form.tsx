@@ -8,6 +8,8 @@ import { galleryLabels, SIZES } from "../../lib/catalog.mjs";
 import type { EditableVariant } from "../../lib/admin/catalog";
 import { ALLOWED_ACCEPT, UPLOAD_MAX_BYTES, humanSize } from "../../lib/media/rules";
 import { ADMIN_PATH } from "../../lib/site";
+import { GENDERS, categoryLabel, isGender, type Gender } from "../../lib/catalog-categories";
+import type { CatalogModel } from "../../lib/admin/queries";
 import { prepareImage } from "./prepare-image";
 
 const PHOTOS = 6;
@@ -28,7 +30,12 @@ const photoRole = (index: number) => {
  * enregistre ensuite leur ordre avec le reste. Six photos sont nécessaires
  * pour mettre le coloris en ligne : la galerie de la boutique en montre six.
  */
-export default function VariantForm({ variant }: { variant?: EditableVariant }) {
+export default function VariantForm({ variant, models, modelId }: {
+  variant?: EditableVariant;
+  /** Models the colourway can belong to; `modelId`: preselected one for a new colourway. */
+  models: CatalogModel[];
+  modelId?: number;
+}) {
   const router = useRouter();
   const lock = useRef(false);
   const fileRef = useRef<HTMLInputElement>(null);
@@ -37,7 +44,14 @@ export default function VariantForm({ variant }: { variant?: EditableVariant }) 
   const [name, setName] = useState(variant?.colorName ?? "");
   // Prefilled with the built-in translation, so it is kept if the French name is changed.
   const [nameAr, setNameAr] = useState(variant?.colorNameAr ?? (variant ? arabic[variant.colorName] ?? "" : ""));
-  const [hex, setHex] = useState(variant?.colorHex ?? "#cccccc");
+  // A short code (#fff) is shown in full (#ffffff): the colour picker only understands 6 digits.
+  const [hex, setHex] = useState(() => {
+    const initial = variant?.colorHex ?? "#cccccc";
+    return /^#[0-9a-fA-F]{3}$/.test(initial) ? `#${[...initial.slice(1)].map((c) => c + c).join("")}` : initial;
+  });
+  const [productId, setProductId] = useState<number | null>(variant?.productId ?? modelId ?? (models.length === 1 ? models[0].id : null));
+  const [gender, setGender] = useState<Gender | null>(variant?.gender ?? null);
+  const brand = models.find((m) => m.id === productId)?.brand ?? null;
   const [price, setPrice] = useState(String(variant?.price ?? 649));
   const [oldPrice, setOldPrice] = useState(variant ? (variant.oldPrice === null ? "" : String(variant.oldPrice)) : "799");
   const [active, setActive] = useState(variant?.active ?? false);
@@ -109,7 +123,7 @@ export default function VariantForm({ variant }: { variant?: EditableVariant }) 
         method: variant ? "PUT" : "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({
-          name, nameAr, hex, price: toNumber(price), oldPrice: toNumber(oldPrice), active, photos: photos.map((p) => p.ref),
+          name, nameAr, hex, productId, gender, price: toNumber(price), oldPrice: toNumber(oldPrice), active, photos: photos.map((p) => p.ref),
           stocks: stocks.map((s) => ({ size: s.size, stock: toNumber(s.value) })),
         }),
       });
@@ -149,8 +163,22 @@ export default function VariantForm({ variant }: { variant?: EditableVariant }) 
   return (
     <div className="vz-form">
       <section className="ad-panel">
-        <div className="ad-panel-head"><div><h2>Identité du coloris</h2><p>Nom affiché sur la boutique, en français et en arabe, et pastille de couleur.</p></div></div>
+        <div className="ad-panel-head"><div><h2>Identité du coloris</h2><p>Modèle, genre, nom affiché sur la boutique (français et arabe) et couleur.</p></div></div>
         <div className="vz-form-grid">
+          <label className="ad-field">
+            <span className="ord-field-label">Modèle *</span>
+            <select value={productId ?? ""} onChange={(e) => setProductId(e.target.value ? Number(e.target.value) : null)} aria-label="Modèle du coloris">
+              <option value="" disabled>Choisissez le modèle</option>
+              {models.map((m) => <option key={m.id} value={m.id}>{m.brand ? `${m.name} · ${m.brand}` : m.name}</option>)}
+            </select>
+          </label>
+          <label className="ad-field">
+            <span className="ord-field-label">Genre</span>
+            <select value={gender ?? ""} onChange={(e) => setGender(isGender(e.target.value) ? e.target.value : null)} aria-label="Genre du coloris">
+              <option value="">Non classé</option>
+              {GENDERS.map((g) => <option key={g} value={g}>{categoryLabel(brand, g)}</option>)}
+            </select>
+          </label>
           <label className="ad-field">
             <span className="ord-field-label">Nom (français) *</span>
             <input value={name} onChange={(e) => setName(e.target.value)} maxLength={60} placeholder="Ex. Sable | Noir" aria-label="Nom du coloris"/>

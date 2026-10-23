@@ -381,3 +381,11 @@ html[dir=rtl] .checkout.purchase-popup .purchase-input input[type=tel]:placehold
 .whatsapp-float:hover{transform:scale(1.06)}
 .whatsapp-float svg{width:30px;height:30px}
 @media(max-width:600px){.whatsapp-float{bottom:calc(67px + env(safe-area-inset-bottom) + 14px);inset-inline-end:16px;width:52px;height:52px}.whatsapp-float svg{width:28px;height:28px}}
+/* Product cards: light grey background #f2f3f4; the white background of the photos blends into it. */
+.card,.card.compact-card{background:#f2f3f4}
+.compact-card .picture{background:#f2f3f4}
+.compact-card .picture .photo-button{background:transparent}
+.compact-card .picture img{mix-blend-mode:multiply}
+/* Product page: every colourway / model shown at once, on several rows if needed (none hidden off-screen);
+   the one displayed keeps its black underline. */
+.prestige-detail .color-photos{flex-wrap:wrap;overflow:visible;row-gap:10px;scroll-snap-type:none}

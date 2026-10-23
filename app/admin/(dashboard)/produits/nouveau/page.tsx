@@ -3,18 +3,25 @@ import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import AdminHeader from "../../../../../components/admin/header";
 import VariantForm from "../../../../../components/admin/variant-form";
+import { listModels } from "../../../../../lib/admin/queries";
 import { ADMIN_PATH } from "../../../../../lib/site";
 
 export const metadata: Metadata = { title: "Nouveau coloris" };
 
-export default function NewVariantPage() {
+/** New colourway; ?modele=<id> (link of a model page) preselects its model. */
+export default async function NewVariantPage({ searchParams }: { searchParams: Promise<{ modele?: string }> }) {
+  const models = await listModels();
+  const requested = Number((await searchParams).modele);
+  const model = models.find((m) => m.id === requested);
+  const back = model ? `${ADMIN_PATH}/produits/modeles/${model.id}` : `${ADMIN_PATH}/produits`;
+
   return (
     <>
-      <AdminHeader eyebrow="Cloudtilt" title="Nouveau coloris"/>
+      <AdminHeader eyebrow={model?.name ?? "Catalogue"} title="Nouveau coloris"/>
       <div className="ad-content">
-        <Link className="ad-back" href={`${ADMIN_PATH}/produits`}><ArrowLeft/> Retour aux produits</Link>
+        <Link className="ad-back" href={back}><ArrowLeft/> {model ? `Retour à ${model.name}` : "Retour aux produits"}</Link>
         <p className="ord-subtitle">Le coloris est créé masqué tant que ses 6 photos ne sont pas ajoutées ; mettez-le en ligne quand il est prêt.</p>
-        <VariantForm/>
+        <VariantForm models={models} modelId={model?.id}/>
       </div>
     </>
   );

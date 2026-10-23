@@ -10,7 +10,7 @@
  * — un coloris déjà commandé ne peut pas être supprimé, seulement masqué.
  */
 import "server-only";
-import { and, asc, count, eq, ilike, max, ne } from "drizzle-orm";
+import { and, asc, count, eq, ilike, max, ne, or } from "drizzle-orm";
 import { z } from "zod";
 import { getDb, schema } from "../../db";
 import { SIZES } from "../catalog.mjs";
@@ -100,8 +100,14 @@ const fullSchema = z.object({
   name: z.string().trim().min(2, "Nom du coloris : 2 caractères minimum.").max(60, "Nom du coloris : 60 caractères maximum."),
   /** Nom arabe ; vide = traduction intégrée à la boutique (ou le nom français). */
   nameAr: z.string().trim().max(60, "Nom arabe : 60 caractères maximum.").transform((v) => v || null),
-  hex: z.string().trim().regex(/^#[0-9a-fA-F]{6}$/, "Couleur : un code comme #a8a297."),
+  // Short codes of the first catalogue (#fff) are accepted and written in full (#ffffff).
+  hex: z.string().trim().regex(/^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/, "Couleur : un code comme #a8a297.")
+    .transform((v) => (v.length === 4 ? `#${[...v.slice(1)].map((c) => c + c).join("")}` : v)),
   photos: z.array(z.string().refine(isImageRef, "Référence de photo invalide.")).max(PHOTOS_PER_VARIANT, `${PHOTOS_PER_VARIANT} photos maximum.`),
+  /** Model of the colourway (products.id). */
+  productId: z.number({ invalid_type_error: "Choisissez le modèle." }).int().positive("Choisissez le modèle."),
+  /** Gender: homme, femme, unisexe; null = not classified. */
+  gender: z.enum(GENDERS, { errorMap: () => ({ message: "Genre inconnu." }) }).nullable(),
   ...priceFields,
 }).refine(oldPriceRule, oldPriceIssue)
   .refine((v) => !v.active || v.photos.length === PHOTOS_PER_VARIANT, {
@@ -116,10 +122,16 @@ const writePhotos = async (tx: Tx, id: number, name: string, photos: string[]) =
   }
 };
 
-const assertUniqueName = async (tx: Tx, name: string, exceptId?: number) => {
+/** Two colourways of the same model cannot share a name (two models can: Cloudtilt White, Cloudsurfer White). */
+const assertUniqueName = async (tx: Tx, name: string, productId: number, exceptId?: number) => {
   const same = await tx.select({ id: variants.id }).from(variants)
-    .where(and(ilike(variants.colorName, name.replace(/[%_\\]/g, "\\$&")), exceptId ? ne(variants.id, exceptId) : undefined)).limit(1);
-  if (same.length) throw new Rejected(`Un coloris s'appelle déjà « ${name} ».`);
+    .where(and(eq(variants.productId, productId), ilike(variants.colorName,name.replace(/[%_\\]/g, "\\$&")), exceptId ? ne(variants.id, exceptId) : undefined)).limit(1);
+  if (same.length) throw new Rejected(`Ce modèle a déjà un coloris « ${name} ».`);
+};
+
+const assertModel = async (tx: Tx, productId: number) => {
+  const [model] = await tx.select({ id: products.id }).from(products).where(eq(products.id, productId)).limit(1);
+  if (!model) throw new Rejected("Ce modèle n'existe pas : rechargez la page.");
 };
 
 export const createVariant = async (payload: unknown): Promise<Result<{ id: number; slug: string }>> => {
@@ -128,9 +140,9 @@ export const createVariant = async (payload: unknown): Promise<Result<{ id: numb
   const input = parsed.data;
 
   return inTransaction(async (tx) => {
-    await assertUniqueName(tx, input.name);
-    const [product] = await tx.select({ id: products.id }).from(products).orderBy(asc(products.id)).limit(1);
-    if (!product) return ko("Produit Cloudtilt introuvable : lancez npm run db:seed.");
+    await assertModel(tx, input.productId);
+    await assertUniqueName(tx, input.name, input.productId);
+    const product = { id: input.productId };
 
     // Slug: identifier of the cart and of the product URL (/cloudtilt/<slug>), unique and never reused.
     const base = slugify(input.name) || "coloris";
@@ -140,7 +152,7 @@ export const createVariant = async (payload: unknown): Promise<Result<{ id: numb
     const [{ last }] = await tx.select({ last: max(variants.position) }).from(variants);
     const [created] = await tx.insert(variants).values({
       productId: product.id, slug, colorName: input.name, colorNameAr: input.nameAr, colorHex: input.hex.toLowerCase(),
-      price: input.price, oldPrice: input.oldPrice, active: input.active, position: (last ?? -1) + 1,
+      price: input.price, oldPrice: input.oldPrice, active: input.active, position: (last ?? -1) + 1, gender: input.gender,
     }).returning({ id: variants.id });
 
     await tx.insert(variantSizes).values(SIZES.map((size) => ({
@@ -159,10 +171,12 @@ export const saveVariant = async (id: number, payload: unknown): Promise<Result<
   return inTransaction(async (tx) => {
     const [variant] = await tx.select({ id: variants.id, active: variants.active }).from(variants).where(eq(variants.id, id)).limit(1);
     if (!variant) return ko("Ce coloris n'existe pas.");
-    await assertUniqueName(tx, input.name, id);
+    await assertModel(tx, input.productId);
+    await assertUniqueName(tx, input.name, input.productId, id);
     if (variant.active && !input.active) await assertAnotherActive(tx, id);
 
     await tx.update(variants).set({
+      productId: input.productId, gender: input.gender,
       colorName: input.name, colorNameAr: input.nameAr, colorHex: input.hex.toLowerCase(),
       price: input.price, oldPrice: input.oldPrice, active: input.active,
     }).where(eq(variants.id, id));
@@ -182,6 +196,33 @@ export const setVariantGender = async (id: number, payload: unknown): Promise<Re
   if (!parsed.success) return firstIssue(parsed.error);
   const updated = await getDb().update(variants).set({ gender: parsed.data.gender }).where(eq(variants.id, id)).returning({ id: variants.id });
   return updated.length ? ok({ id }) : ko("Ce coloris n'existe pas.");
+};
+
+/** Addresses already used by the site: a model slug is the first part of /<model>/<colourway>. */
+const RESERVED_SLUGS = new Set(["boutique", "femme", "homme", "promotions", "favoris", "home", "accueil", "admin", "allah", "api", "feed", "assets", "_next"]);
+
+/**
+ * New model (« Cloudsurfer Max »). Body: { name, brand }. Its slug (cloudsurfer-max) gives the address
+ * of its colourways on the shop: /cloudsurfer-max/<colourway>. Colourways are then added from its page.
+ */
+export const createModel = async (payload: unknown): Promise<Result<{ id: number; slug: string }>> => {
+  const parsed = z.object({
+    name: z.string().trim().min(2, "Nom du modèle : 2 caractères minimum.").max(60, "Nom du modèle : 60 caractères maximum."),
+    brand: z.string().trim().max(40, "Marque : 40 caractères maximum."),
+  }).safeParse(payload);
+  if (!parsed.success) return firstIssue(parsed.error);
+  const { name, brand } = parsed.data;
+  const slug = slugify(name);
+  if (!slug) return ko("Nom du modèle : utilisez des lettres ou des chiffres.", "name");
+  if (RESERVED_SLUGS.has(slug)) return ko(`« ${name} » correspond à une page du site : choisissez un autre nom.`, "name");
+
+  return inTransaction(async (tx) => {
+    const same = await tx.select({ id: products.id }).from(products)
+      .where(or(eq(products.slug, slug), ilike(products.name, name.replace(/[%_\\]/g, "\\$&")))).limit(1);
+    if (same.length) return ko(`Un modèle « ${name} » existe déjà.`, "name");
+    const [created] = await tx.insert(products).values({ name, slug, brand: brand || null }).returning({ id: products.id });
+    return ok({ id: created.id, slug });
+  });
 };
 
 /** Brand of a model (« On »). Body: { brand } — empty = no brand. */
