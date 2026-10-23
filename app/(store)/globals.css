@@ -397,6 +397,10 @@ html[dir=rtl] .checkout.purchase-popup .purchase-input input[type=tel]:placehold
 html[dir=rtl] .prestige-detail .details h1.product-title{direction:rtl;text-align:right}
 html[dir=rtl] .prestige-detail .details h1.product-title .product-colour{font-family:Tahoma,Arial,sans-serif}
 .gallery-viewport>.detail-discount{position:absolute;top:14px;left:14px;z-index:2;padding:5px 10px;border-radius:6px;background:#fce6df;color:var(--sale);font-size:14px;font-weight:700;line-height:1.2;pointer-events:none;direction:ltr;unicode-bidi:isolate}
-html[dir=rtl] .gallery-viewport>.detail-discount{left:auto;right:14px}
 /* Discount badges (cards and product photo): "-19%" in Arabic too, the minus sign stays in front. */
 .discount-badge,.detail-discount{direction:ltr;unicode-bidi:isolate}
+/* Favourite heart always top RIGHT, discount badge always top LEFT, in French and in Arabic
+   (cards and product photo): they never meet. */
+.compact-card .picture .heart,html[dir=rtl] .compact-card .picture .heart{inset-inline-start:auto;inset-inline-end:auto;left:auto;right:0}
+.compact-card .picture .discount-badge,html[dir=rtl] .compact-card .picture .discount-badge{inset-inline-start:auto;inset-inline-end:auto;right:auto;left:5px}
+html[dir=rtl] .gallery-viewport>.heart{left:auto;right:29px}
