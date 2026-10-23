@@ -11,7 +11,7 @@ import { ALLOWED_ACCEPT, UPLOAD_MAX_BYTES, humanSize } from "../../lib/media/rul
 import { ADMIN_PATH } from "../../lib/site";
 import { GENDERS, categoryLabel, isGender, type Gender } from "../../lib/catalog-categories";
 import type { CatalogModel } from "../../lib/admin/queries";
-import { prepareImage } from "./prepare-image";
+import { prepareImage, prepareVignette } from "./prepare-image";
 
 const PHOTOS = 6;
 const toNumber = (value: string) => (value.trim() === "" ? null : Number(value.trim()));
@@ -50,6 +50,12 @@ export default function VariantForm({ variant, models, modelId }: {
     const initial = variant?.colorHex ?? "#cccccc";
     return /^#[0-9a-fA-F]{3}$/.test(initial) ? `#${[...initial.slice(1)].map((c) => c + c).join("")}` : initial;
   });
+  /** Thumbnail of the product page: one of the photos or a dedicated 150×150 image; null = the first photo. */
+  const [thumbnail, setThumbnail] = useState<{ ref: string; url: string } | null>(
+    variant?.thumbnail && variant.thumbnailUrl ? { ref: variant.thumbnail, url: variant.thumbnailUrl } : null);
+  const [thumbBusy, setThumbBusy] = useState(false);
+  const [thumbError, setThumbError] = useState<string | null>(null);
+  const thumbRef = useRef<HTMLInputElement>(null);
   const [productId, setProductId] = useState<number | null>(variant?.productId ?? modelId ?? (models.length === 1 ? models[0].id : null));
   const [gender, setGender] = useState<Gender | null>(variant?.gender ?? null);
   const model = models.find((m) => m.id === productId) ?? null;
@@ -69,6 +75,31 @@ export default function VariantForm({ variant, models, modelId }: {
   const [message, setMessage] = useState<{ tone: "error" | "success" | "info"; text: string } | null>(null);
 
   const complete = photos.length === PHOTOS;
+
+  /** Dedicated thumbnail: made square 150×150 WebP here, then stored on R2 like the photos. */
+  const uploadThumbnail = async (file: File) => {
+    setThumbBusy(true);
+    setThumbError(null);
+    try {
+      const ready = await prepareVignette(file);
+      const body = new FormData();
+      body.append("fichier", ready);
+      body.append("nom", name || "coloris");
+      body.append("type", "vignette");
+      const response = await fetch("/api/upload", { method: "POST", body });
+      const data = (await response.json().catch(() => ({ ok: false, erreur: `Le serveur a répondu ${response.status}.` }))) as
+        { ok: boolean; key?: string; url?: string; erreur?: string };
+      if (!data.ok || !data.key || !data.url) { setThumbError(data.erreur ?? "Téléversement impossible."); return; }
+      setThumbnail({ ref: data.key, url: data.url });
+      setMessage({ tone: "info", text: "Vignette envoyée sur R2 (150 × 150 WebP). Pensez à enregistrer la fiche." });
+    } catch (error) {
+      setThumbError(error instanceof Error && error.message !== "Failed to fetch" ? error.message : "Le serveur n’a pas répondu.");
+    } finally {
+      setThumbBusy(false);
+      if (thumbRef.current) thumbRef.current.value = "";
+    }
+  };
+  const thumbnailShown = thumbnail?.url ?? photos[0]?.url ?? null;
 
   const choose = (slot: number) => { setSlotForUpload(slot); fileRef.current?.click(); };
 
@@ -125,7 +156,7 @@ export default function VariantForm({ variant, models, modelId }: {
         method: variant ? "PUT" : "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({
-          name, nameAr, hex, productId, gender, price: toNumber(price), oldPrice: toNumber(oldPrice), active, photos: photos.map((p) => p.ref),
+          name, nameAr, hex, productId, gender, thumbnail: thumbnail?.ref ?? null, price: toNumber(price), oldPrice: toNumber(oldPrice), active, photos: photos.map((p) => p.ref),
           stocks: stocks.map((s) => ({ size: s.size, stock: toNumber(s.value) })),
         }),
       });
@@ -245,6 +276,46 @@ export default function VariantForm({ variant, models, modelId }: {
           })}
         </div>
         <input ref={fileRef} type="file" accept={ALLOWED_ACCEPT} hidden onChange={(e) => { const f = e.target.files?.[0]; if (f) void upload(f); }}/>
+      </section>
+
+      <section className="ad-panel">
+        <div className="ad-panel-head"><div>
+          <h2>Vignette du coloris</h2>
+          <p>Petite image au-dessus du nom, sur la fiche produit. Choisissez une photo du coloris ou téléversez une image dédiée
+            (JPG, PNG ou WebP, 5 Mo maximum) : elle est convertie en carré 150 × 150, produit entier et centré. Sans choix : la 1re photo.</p>
+        </div></div>
+        <div className="vz-thumb">
+          <div className="vz-thumb-preview">
+            <span className="vz-thumb-square">
+              {/* eslint-disable-next-line @next/next/no-img-element -- aperçu de la vignette. */}
+              {thumbnailShown ? <img src={thumbnailShown} alt="Aperçu de la vignette"/> : <ImagePlus aria-hidden="true"/>}
+            </span>
+            <small>{thumbnail ? (photos.some((p) => p.ref === thumbnail.ref) ? "Photo du coloris choisie" : "Image dédiée") : "Par défaut : 1re photo"}</small>
+            {thumbnail && <button type="button" className="ad-btn" onClick={() => setThumbnail(null)} disabled={thumbBusy}><X aria-hidden="true"/> Retirer</button>}
+          </div>
+          <div className="vz-thumb-choices">
+            <span className="ord-field-label">Choisir une photo du coloris</span>
+            {photos.length ? (
+              <div className="vz-thumb-grid">
+                {photos.map((p, i) => (
+                  <button type="button" key={p.ref} className={`vz-thumb-option${thumbnail?.ref === p.ref ? " is-chosen" : ""}`}
+                    aria-pressed={thumbnail?.ref === p.ref} aria-label={`Vignette : photo ${i + 1}`} onClick={() => { setThumbnail(p); setThumbError(null); }}>
+                    {/* eslint-disable-next-line @next/next/no-img-element -- miniature de la photo. */}
+                    <img src={p.url} alt=""/>
+                  </button>
+                ))}
+              </div>
+            ) : <p className="vz-thumb-empty">Ajoutez d’abord des photos, ou téléversez une image dédiée.</p>}
+            <div className="vz-thumb-actions">
+              <button type="button" className="ad-btn" onClick={() => thumbRef.current?.click()} disabled={thumbBusy} aria-busy={thumbBusy}>
+                {thumbBusy ? <LoaderCircle className="ad-spin" aria-hidden="true"/> : <ImagePlus aria-hidden="true"/>} Téléverser une image dédiée
+              </button>
+              <input ref={thumbRef} type="file" accept="image/jpeg,image/png,image/webp" hidden aria-label="Image dédiée pour la vignette"
+                onChange={(e) => { const file = e.target.files?.[0]; if (file) uploadThumbnail(file); }}/>
+            </div>
+            {thumbError && <p className="ord-error" role="alert">{thumbError}</p>}
+          </div>
+        </div>
       </section>
 
       <section className="ad-panel">

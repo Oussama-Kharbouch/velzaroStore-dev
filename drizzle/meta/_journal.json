@@ -29,6 +29,13 @@
       "when": 1792675613431,
       "tag": "0003_categories_suppression",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1792786670466,
+      "tag": "0004_vignette_coloris",
+      "breakpoints": true
     }
   ]
 }

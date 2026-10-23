@@ -14,7 +14,7 @@
 import { eq, like } from "drizzle-orm";
 import { getDb, schema } from "../../../db";
 import { requireAdminApi } from "../../../lib/admin/guard";
-import { STORED_IMAGE_TYPES, UPLOAD_MAX_BYTES, humanSize, slugify } from "../../../lib/media/rules";
+import { STORED_IMAGE_TYPES, UPLOAD_MAX_BYTES, VIGNETTE_MAX_BYTES, humanSize, slugify } from "../../../lib/media/rules";
 import { getPublicUrl, r2Configured, uploadToR2 } from "../../../lib/r2";
 
 const { media } = schema;
@@ -38,19 +38,26 @@ export async function POST(request: Request) {
 
   let file: unknown;
   let name: unknown;
+  let kind: unknown;
   try {
     const form = await request.formData();
     file = form.get("fichier");
     name = form.get("nom");
+    kind = form.get("type");
   } catch {
     return refuse("Requête illisible (fichier trop lourd ?).", 400);
   }
+  // type=vignette: colourway thumbnail (150×150 WebP made by the browser), stored as vignette-<n>.webp.
+  const vignette = kind === "vignette";
   if (!(file instanceof File) || file.size === 0) return refuse("Aucune image reçue.", 400);
+  if (vignette && file.size > VIGNETTE_MAX_BYTES) return refuse(`Vignette trop lourde (${humanSize(file.size)}) : 5 Mo maximum.`);
   if (file.size > UPLOAD_MAX_BYTES) return refuse(`Image trop lourde (${humanSize(file.size)}) : 10 Mo maximum.`);
 
   const bytes = new Uint8Array(await file.arrayBuffer());
   const type = sniff(bytes);
   if (!type) return refuse("Seules les images WebP ou JPEG préparées par le dashboard sont acceptées.");
+  if (vignette && type !== "image/webp") return refuse("La vignette doit être préparée en WebP par le dashboard.");
+  const prefix = vignette ? "vignette" : "photo";
 
   const db = getDb();
   const sha256 = toHex(await crypto.subtle.digest("SHA-256", bytes));
@@ -63,8 +70,9 @@ export async function POST(request: Request) {
   for (let attempt = 0; attempt < 5; attempt++) {
     // Next free number in the folder; a removed number is never reused.
     const taken = await db.select({ id: media.id }).from(media).where(like(media.id, `${folder}/%`));
-    const highest = taken.reduce((max, row) => Math.max(max, Number(/\/photo-(\d+)\.[a-z]+$/.exec(row.id)?.[1] ?? 0)), 0);
-    const key = `${folder}/photo-${highest + 1}.${extension}`;
+    const numbered = new RegExp(`/${prefix}-(\\d+)\\.[a-z]+$`);
+    const highest = taken.reduce((max, row) => Math.max(max, Number(numbered.exec(row.id)?.[1] ?? 0)), 0);
+    const key = `${folder}/${prefix}-${highest + 1}.${extension}`;
 
     const inserted = await db.insert(media).values({ id: key, sha256, size: bytes.byteLength }).onConflictDoNothing().returning({ id: media.id });
     if (!inserted.length) {

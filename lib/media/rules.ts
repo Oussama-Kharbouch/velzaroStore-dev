@@ -15,6 +15,11 @@ export const UPLOAD_JPEG_QUALITY = 0.85;
 export const ALLOWED_INPUT_TYPES = ["image/jpeg", "image/png", "image/webp", "image/avif", "image/gif", "image/heic", "image/heif"];
 export const ALLOWED_ACCEPT = ALLOWED_INPUT_TYPES.join(",");
 
+/** Colourway thumbnail (product page): uploaded JPG/PNG/WebP up to 5 MB, stored as a 150×150 WebP. */
+export const VIGNETTE_SIZE = 150;
+export const VIGNETTE_MAX_BYTES = 5 * 1024 * 1024;
+export const VIGNETTE_INPUT_TYPES = ["image/jpeg", "image/png", "image/webp"];
+
 /** Formats stored in R2, with their file extension. */
 export const STORED_IMAGE_TYPES = { "image/webp": "webp", "image/jpeg": "jpg" } as const;
 

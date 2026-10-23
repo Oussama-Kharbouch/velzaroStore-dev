@@ -43,6 +43,9 @@ export const variants = pgTable("variants", {
   position: integer("position").notNull().default(0),
   // Catégorie du dashboard : homme, femme ou unisexe ; null = non classé (jamais deviné).
   gender: text("gender", { enum: GENDERS }),
+  // Vignette du coloris sur la fiche produit (clé R2 : une de ses photos, ou une vignette
+  // 150×150 dédiée) ; null = sa 1re photo.
+  thumbnail: text("thumbnail"),
 }, (table) => [
   index("variants_product_idx").on(table.productId),
   check("variants_price_positive", sql`${table.price} > 0`),

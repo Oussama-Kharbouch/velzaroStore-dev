@@ -40,7 +40,10 @@ const r2Fetch = async (method: "PUT" | "DELETE", key: string, init: { body?: Uin
     region: "auto",
   });
   const url = `${requireEnv("R2_ENDPOINT").replace(/\/+$/, "")}/${requireEnv("R2_BUCKET")}/${key.split("/").map(encodeURIComponent).join("/")}`;
-  const response = await client.fetch(url, { method, body: init.body, headers: init.headers });
+  // Explicit size: inside Next the body may be sent as a stream, and R2 then refuses the upload
+  // (HTTP 411 MissingContentLength).
+  const headers = init.body ? { ...init.headers, "Content-Length": String(init.body.byteLength) } : init.headers;
+  const response = await client.fetch(url, { method, body: init.body, headers });
   if (!response.ok) throw new Error(`R2 ${method} ${key} : HTTP ${response.status} ${(await response.text()).slice(0, 200)}`);
 };
 

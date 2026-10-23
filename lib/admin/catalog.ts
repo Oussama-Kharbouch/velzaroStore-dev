@@ -108,6 +108,8 @@ const fullSchema = z.object({
   productId: z.number({ invalid_type_error: "Choisissez le modèle." }).int().positive("Choisissez le modèle."),
   /** Gender: homme, femme, unisexe; null = not classified. */
   gender: z.enum(GENDERS, { errorMap: () => ({ message: "Genre inconnu." }) }).nullable(),
+  /** Thumbnail on the product page (one of its photos or a dedicated 150×150 image); null = its first photo. */
+  thumbnail: z.string().refine(isImageRef, "Vignette invalide.").nullable().default(null),
   ...priceFields,
 }).refine(oldPriceRule, oldPriceIssue)
   .refine((v) => !v.active || v.photos.length === PHOTOS_PER_VARIANT, {
@@ -152,7 +154,7 @@ export const createVariant = async (payload: unknown): Promise<Result<{ id: numb
     const [{ last }] = await tx.select({ last: max(variants.position) }).from(variants);
     const [created] = await tx.insert(variants).values({
       productId: product.id, slug, colorName: input.name, colorNameAr: input.nameAr, colorHex: input.hex.toLowerCase(),
-      price: input.price, oldPrice: input.oldPrice, active: input.active, position: (last ?? -1) + 1, gender: input.gender,
+      price: input.price, oldPrice: input.oldPrice, active: input.active, position: (last ?? -1) + 1, gender: input.gender, thumbnail: input.thumbnail,
     }).returning({ id: variants.id });
 
     await tx.insert(variantSizes).values(SIZES.map((size) => ({
@@ -176,7 +178,7 @@ export const saveVariant = async (id: number, payload: unknown): Promise<Result<
     if (variant.active && !input.active) await assertAnotherActive(tx, id);
 
     await tx.update(variants).set({
-      productId: input.productId, gender: input.gender,
+      productId: input.productId, gender: input.gender, thumbnail: input.thumbnail,
       colorName: input.name, colorNameAr: input.nameAr, colorHex: input.hex.toLowerCase(),
       price: input.price, oldPrice: input.oldPrice, active: input.active,
     }).where(eq(variants.id, id));
@@ -295,6 +297,9 @@ export const getVariantForEdit = async (id: number) => {
     db.select({ n: count() }).from(orderItems).where(eq(orderItems.variantId, id)),
   ]);
   // Each photo: stored reference (R2 key) and public address for the preview.
-  return { ...variant, photos: photos.map((p) => ({ ref: p.url, url: imageUrl(p.url) })), sizes, orderLines: n };
+  return {
+    ...variant, photos: photos.map((p) => ({ ref: p.url, url: imageUrl(p.url) })), sizes, orderLines: n,
+    thumbnailUrl: variant.thumbnail ? imageUrl(variant.thumbnail) : null,
+  };
 };
 export type EditableVariant = NonNullable<Awaited<ReturnType<typeof getVariantForEdit>>>;

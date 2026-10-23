@@ -4,7 +4,6 @@ import { useState, useEffect, useRef } from 'react';
 import { translate } from './translations';
 import { shippingFee } from '../../lib/shipping';
 import { imageFraming } from './image-framing';
-import { colorPhotoFraming } from './color-photo-framing';
 import { galleryPhotoFraming } from './gallery-photo-framing';
 import { ShoppingCart, ShoppingBag, Search, Heart, ArrowRight, ArrowLeft, Menu, X, Minus, Plus, Check, Truck, ShieldCheck, SlidersHorizontal, Home, Store as StoreIcon, ChevronRight, BadgePercent, CreditCard, Sparkles, Trash2, UserRound, Phone, MapPin, Clock, RefreshCw } from 'lucide-react';
 import { catalogId, galleryLabels, productPath } from '../../lib/catalog.mjs';
@@ -33,11 +32,11 @@ export default function Store({ catalog, media, initialProductId, initialPage, i
     // Every size at 0 (stock from the dashboard): shown in grey, cannot be bought.
     const soldOut=(p:{sizes:{available:boolean}[]})=>!p.sizes.some(s=>s.available);
     const imageFor=(id:string)=>byId(id)?.photos[0]??'';
-    const colorPhotoFor=(id:string)=>{const photos=byId(id)?.photos??[];return photos[1]??photos[0]??''};
+    
     const priceOf=(id:string)=>byId(id)?.price??0;
     // Framing of each photo (*-framing.ts) is looked up by its R2 key, not by its address.
     const imageKeyFor=(id:string)=>byId(id)?.photoKeys[0]??'';
-    const colorKeyFor=(id:string)=>{const keys=byId(id)?.photoKeys??[];return keys[1]??keys[0]??''};
+    
     // Arabic by default; the server already rendered the language of the cookie (lib/shop-lang.ts).
     const [lang, setLang] = useState<'fr' | 'ar'>(initialLang ?? 'ar');
     // Arabic colourway names entered in the dashboard take precedence over the built-in translations.
@@ -164,7 +163,7 @@ export default function Store({ catalog, media, initialProductId, initialPage, i
           <div className="gallery-pagination"><span className="gallery-count" aria-live="polite">{galleryIndex+1} / {galleryImages.length}</span></div>
         </div>
         <div className="details">
-          <div className="color-photos" aria-label={t('Choisir un coloris')}>{products.filter(p=>p.modelSlug===product.modelSlug).map(p=>{const photo=colorPhotoFor(p.id);return <button key={p.id} title={t(p.name)} aria-label={t(p.name)} aria-pressed={p.id===product.id} className={[p.id===product.id&&'chosen',soldOut(p)&&'sold-out'].filter(Boolean).join(' ')} onClick={()=>{setProduct(p);history.pushState(null,'',productPath(p.id));setQuery('');setColorFilter('all');window.scrollTo(0,0)}}><span className={'color-photo-frame '+(['gris-orange','blanc-gris'].includes(p.id)?'portrait-color':'')}><img src={photo} style={colorPhotoFraming[colorKeyFor(p.id)]} alt="" loading="lazy"/></span></button>})}</div>
+          <div className="color-photos" aria-label={t('Choisir un coloris')}>{products.filter(p=>p.modelSlug===product.modelSlug).map(p=>{return <button key={p.id} title={t(p.name)} aria-label={t(p.name)} aria-pressed={p.id===product.id} className={[p.id===product.id&&'chosen',soldOut(p)&&'sold-out'].filter(Boolean).join(' ')} onClick={()=>{setProduct(p);history.pushState(null,'',productPath(p.id));setQuery('');setColorFilter('all');window.scrollTo(0,0)}}><span className="color-photo-frame color-thumb"><img src={p.thumbnail} alt="" loading="lazy"/></span></button>})}</div>
           <h1 className="product-title">{product.brand?<><span className="product-brand">{product.brand}</span>{' '}</>:null}<span className="product-line"><bdi className="product-model">{product.model}</bdi>{' - '}<span className="color-name product-colour"><bdi>{t(product.name)}</bdi></span></span></h1>
           <p className="detail-price">{money(product.price)}{product.oldPrice!==null&&<> <del>{money(product.oldPrice)}</del></>}</p>{soldOut(product)&&<p role="status" className="sold-out-note">{t('Ce coloris est épuisé.')}</p>}
           <div className="product-options"><div className="pointure-picker">          <div className="size-label"><strong>{t('Pointure')}</strong></div>

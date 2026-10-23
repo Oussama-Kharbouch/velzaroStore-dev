@@ -406,3 +406,10 @@ html[dir=rtl] .prestige-detail .details h1.product-title{direction:rtl;text-alig
 .compact-card .picture .heart,html[dir=rtl] .compact-card .picture .heart{inset-inline-start:auto;inset-inline-end:auto;left:auto;right:0}
 .compact-card .picture .discount-badge,html[dir=rtl] .compact-card .picture .discount-badge{inset-inline-start:auto;inset-inline-end:auto;right:auto;left:5px}
 html[dir=rtl] .gallery-viewport>.heart{left:auto;right:29px}
+/* Colourway thumbnails of the product page (chosen in the dashboard, else the first photo): squares
+   72×72 (64 on mobile), the whole product on light grey; the colourway shown stays underlined in black. */
+.prestige-detail .color-photos button{flex:0 0 72px;padding-bottom:6px}
+.prestige-detail .color-photos .color-photo-frame.color-thumb{width:72px;height:72px;aspect-ratio:1;transform:none;border-radius:6px;background:#f2f3f4}
+.prestige-detail .color-photos button.chosen .color-photo-frame.color-thumb{transform:none}
+.prestige-detail .color-photos .color-photo-frame.color-thumb img{position:static;width:100%;height:100%;max-width:100%;object-fit:contain;mix-blend-mode:multiply}
+@media(max-width:600px){.prestige-detail .color-photos button{flex-basis:64px}.prestige-detail .color-photos .color-photo-frame.color-thumb{width:64px;height:64px}}

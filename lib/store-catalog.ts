@@ -32,6 +32,8 @@ export type StoreProduct = {
   photos: string[];
   /** Matching R2 keys: the framing of each photo (app/(store)/*-framing.ts) is looked up by key. */
   photoKeys: string[];
+  /** Colourway thumbnail of the product page: the one chosen in the dashboard, or its first photo. */
+  thumbnail: string;
 };
 
 /** Catalogue intégré au code, utilisé si la base ne répond pas : la boutique reste en ligne. */
@@ -39,6 +41,7 @@ const fallbackCatalog = (): StoreProduct[] => staticProducts.map((p) => ({
   ...p, model: PRODUCT.name, modelSlug: PRODUCT.slug, brand: null, nameAr: null, price: PRICE, oldPrice: OLD_PRICE, sizes: SIZES.map((size) => ({ size, available: true })),
   photos: photoKeys[p.id].map((key, i) => siteImageUrl({ key, legacy: legacyPhotoPaths[p.id][i] })),
   photoKeys: photoKeys[p.id],
+  thumbnail: siteImageUrl({ key: photoKeys[p.id][0], legacy: legacyPhotoPaths[p.id][0] }),
 }));
 
 /**
@@ -83,7 +86,7 @@ export async function getStoreCatalog(): Promise<StoreProduct[]> {
     const rows = await db.select({
       model: products.name, modelSlug: products.slug, brand: products.brand,
       id: variants.id, slug: variants.slug, name: variants.colorName, nameAr: variants.colorNameAr, color: variants.colorHex,
-      price: variants.price, oldPrice: variants.oldPrice,
+      price: variants.price, oldPrice: variants.oldPrice, thumbnail: variants.thumbnail,
     }).from(variants).innerJoin(products, eq(variants.productId, products.id))
       .where(and(eq(variants.active, true), eq(products.active, true)))
       .orderBy(asc(variants.position), asc(variants.id));
@@ -112,7 +115,8 @@ export async function getStoreCatalog(): Promise<StoreProduct[]> {
       sizes: sizes.filter((s) => s.variantId === r.id).map((s) => ({ size: s.size, available: s.stock === null || s.stock > 0 })),
       ...(() => {
         const refs = images.filter((i) => i.variantId === r.id).map((i) => i.url);
-        return { photos: refs.map(imageUrl), photoKeys: refs.map(imageKey) };
+        const photos = refs.map(imageUrl);
+        return { photos, photoKeys: refs.map(imageKey), thumbnail: r.thumbnail ? imageUrl(r.thumbnail) : photos[0] ?? "" };
       })(),
     }));
   } catch (error) {
