@@ -17,6 +17,8 @@ export type StoreProduct = {
   /** Model name ("Cloudtilt", "Cloudsurfer Max") and slug (first part of the product address). */
   model: string;
   modelSlug: string;
+  /** Brand of the model (« New Balance »), shown above its name on the product page; null = none. */
+  brand: string | null;
   name: string;
   /** Nom arabe saisi dans le dashboard ; null = traduction intégrée (translations.ts). */
   nameAr: string | null;
@@ -34,7 +36,7 @@ export type StoreProduct = {
 
 /** Catalogue intégré au code, utilisé si la base ne répond pas : la boutique reste en ligne. */
 const fallbackCatalog = (): StoreProduct[] => staticProducts.map((p) => ({
-  ...p, model: PRODUCT.name, modelSlug: PRODUCT.slug, nameAr: null, price: PRICE, oldPrice: OLD_PRICE, sizes: SIZES.map((size) => ({ size, available: true })),
+  ...p, model: PRODUCT.name, modelSlug: PRODUCT.slug, brand: null, nameAr: null, price: PRICE, oldPrice: OLD_PRICE, sizes: SIZES.map((size) => ({ size, available: true })),
   photos: photoKeys[p.id].map((key, i) => siteImageUrl({ key, legacy: legacyPhotoPaths[p.id][i] })),
   photoKeys: photoKeys[p.id],
 }));
@@ -79,7 +81,7 @@ export async function getStoreCatalog(): Promise<StoreProduct[]> {
       console.error("Nouveaux modèles non créés :", error);
     }
     const rows = await db.select({
-      model: products.name, modelSlug: products.slug,
+      model: products.name, modelSlug: products.slug, brand: products.brand,
       id: variants.id, slug: variants.slug, name: variants.colorName, nameAr: variants.colorNameAr, color: variants.colorHex,
       price: variants.price, oldPrice: variants.oldPrice,
     }).from(variants).innerJoin(products, eq(variants.productId, products.id))
@@ -99,6 +101,7 @@ export async function getStoreCatalog(): Promise<StoreProduct[]> {
       id: r.slug,
       model: r.model,
       modelSlug: r.modelSlug,
+      brand: r.brand,
       name: r.name,
       nameAr: r.nameAr,
       color: r.color,

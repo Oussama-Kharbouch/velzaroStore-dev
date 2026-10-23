@@ -836,6 +836,17 @@ body:has(.ad) { margin: 0; }
 .vz-model-card-text strong { font-family: "Playfair Display", Georgia, serif; font-size: 19px; font-weight: 600; }
 .vz-model-card-text span { color: var(--ad-muted); font-size: 12.5px; }
 .vz-model-row-go { width: 18px; height: 18px; flex-shrink: 0; color: var(--ad-muted); }
+/* Each card keeps its own height: opening the editor of one does not stretch its neighbours. */
+.vz-model-cards { align-items: start; }
+.vz-model-item { position: relative; }
+.vz-model-item .vz-model-card { padding-inline-end: 52px; }
+.vz-model-item.is-editing .vz-model-card { border-color: var(--gold); border-bottom-left-radius: 0; border-bottom-right-radius: 0; }
+.vz-model-edit { position: absolute; top: 10px; inset-inline-end: 10px; display: grid; width: 34px; height: 34px; place-items: center; border: 1px solid var(--ad-line); border-radius: 8px; background: #fff; color: var(--ad-muted); cursor: pointer; }
+.vz-model-edit:hover, .vz-model-item.is-editing .vz-model-edit { border-color: var(--gold); color: var(--ad-text); }
+.vz-model-edit svg { width: 16px; height: 16px; }
+.vz-model-item .vz-model-row-go { margin-top: 26px; }
+.vz-model-item-editor { padding: 14px; border: 1px solid var(--gold); border-top: 0; border-radius: 0 0 12px 12px; background: #fdf8f0; }
+.vz-model-item-editor .vz-brand .ad-field { width: auto; flex: 1 1 140px; }
 .vz-model-create { display: grid; grid-template-columns: 1fr 1fr auto; align-items: end; gap: 10px; width: min(100%, 640px); }
 .vz-model-create .ord-error { grid-column: 1 / -1; }
 .vz-model-create-actions { display: flex; gap: 8px; }

@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ChevronRight, ExternalLink, Plus } from "lucide-react";
+import { ExternalLink, Plus } from "lucide-react";
 import { Alert, EmptyState } from "../../../../components/admin/bits";
 import AdminHeader from "../../../../components/admin/header";
+import ModelCard from "../../../../components/admin/model-card";
 import ModelCreate from "../../../../components/admin/model-create";
 import VariantEditor from "../../../../components/admin/variant-editor";
 import VariantOrder from "../../../../components/admin/variant-order";
@@ -62,20 +63,8 @@ export default async function ProductsPage({ searchParams }: { searchParams: Par
               const sold = own.reduce((sum, v) => sum + v.sold, 0);
               return (
                 <li key={model.id}>
-                  <Link className="vz-model-card" href={`${ADMIN_PATH}/produits/modeles/${model.id}`} aria-label={`Voir les coloris de ${model.name}`}>
-                    <span className="vz-model-card-photos" aria-hidden="true">
-                      {own.slice(0, 4).map((v) => (
-                        // eslint-disable-next-line @next/next/no-img-element -- vignette du catalogue.
-                        <span key={v.id}>{v.image && <img src={v.image} alt=""/>}</span>
-                      ))}
-                    </span>
-                    <span className="vz-model-card-text">
-                      <small>{model.brand ?? "Marque non renseignée"}</small>
-                      <strong>{model.name}</strong>
-                      <span>{own.length} coloris · {own.filter((v) => v.active).length} en ligne · {sold} paire{sold > 1 ? "s" : ""} vendue{sold > 1 ? "s" : ""}</span>
-                    </span>
-                    <ChevronRight className="vz-model-row-go" aria-hidden="true"/>
-                  </Link>
+                  <ModelCard id={model.id} name={model.name} brand={model.brand} images={own.map((v) => v.image)}
+                    summary={`${own.length} coloris · ${own.filter((v) => v.active).length} en ligne · ${sold} paire${sold > 1 ? "s" : ""} vendue${sold > 1 ? "s" : ""}`}/>
                 </li>
               );
             })}
