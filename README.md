@@ -194,7 +194,7 @@ lib/store-catalog.ts        catalogue de la boutique lu dans la base
 lib/catalog.mjs             catalogue intégré (secours), clés R2 des images, source de `npm run db:seed`
 lib/r2.ts                   client Cloudflare R2 : envoi, suppression, adresses publiques
 lib/site.ts                 adresse du dashboard (ADMIN_PATH)
-lib/shipping.ts             frais de livraison (Casablanca 25 DH, autres villes 35 DH)
+lib/shipping.ts             frais de livraison (gratuite partout au Maroc)
 db/                         schéma Drizzle et pool PostgreSQL
 drizzle/                    migrations SQL — ne pas supprimer
 scripts/                    amorçage, import et export

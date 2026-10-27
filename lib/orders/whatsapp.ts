@@ -61,7 +61,7 @@ export const confirmationMessage = (order: MessageOrder) => [
   "",
   "💰 *RÉCAPITULATIF*",
   "",
-  `*Livraison à ${order.customer.city || "votre ville"} :* ${dh(order.shippingFee)}`,
+  `*Livraison à ${order.customer.city || "votre ville"} :* ${order.shippingFee === 0 ? "Gratuite" : dh(order.shippingFee)}`,
   `*TOTAL À PAYER À LA LIVRAISON :* ${dh(order.total)}`,
   "",
   "📍 *ADRESSE DE LIVRAISON*",
