@@ -20,7 +20,7 @@ export default async function NewVariantPage({ searchParams }: { searchParams: P
       <AdminHeader eyebrow={model?.name ?? "Catalogue"} title="Nouveau coloris"/>
       <div className="ad-content">
         <Link className="ad-back" href={back}><ArrowLeft/> {model ? `Retour à ${model.name}` : "Retour aux produits"}</Link>
-        <p className="ord-subtitle">Le coloris est créé masqué tant que ses 6 photos ne sont pas ajoutées ; mettez-le en ligne quand il est prêt.</p>
+        <p className="ord-subtitle">Ajoutez autant de photos que vous voulez (au moins une pour mettre le coloris en ligne).</p>
         <VariantForm models={models} modelId={model?.id}/>
       </div>
     </>

@@ -109,7 +109,7 @@ export default function VariantEditor({ variant, brand }: { variant: CatalogVari
           <p>
             <a href={productPath(variant.slug)} target="_blank" rel="noopener">{productPath(variant.slug)}</a>
             {" · "}{variant.sold} paire{variant.sold > 1 ? "s" : ""} vendue{variant.sold > 1 ? "s" : ""}
-            {variant.photoCount < 6 && <span className="vz-warn"><TriangleAlert aria-hidden="true"/> {variant.photoCount}/6 photos</span>}
+            {variant.photoCount === 0 && <span className="vz-warn"><TriangleAlert aria-hidden="true"/> Aucune photo</span>}
           </p>
         </div>
         <button type="button" className={`vz-toggle${active ? " is-on" : ""}`} onClick={() => setActive(!active)}

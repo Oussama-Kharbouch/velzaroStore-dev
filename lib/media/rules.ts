@@ -20,6 +20,9 @@ export const VIGNETTE_SIZE = 150;
 export const VIGNETTE_MAX_BYTES = 5 * 1024 * 1024;
 export const VIGNETTE_INPUT_TYPES = ["image/jpeg", "image/png", "image/webp"];
 
+/** Photos per colourway: any number up to this one; a colourway online needs at least one. */
+export const PHOTOS_MAX = 10;
+
 /** Formats stored in R2, with their file extension. */
 export const STORED_IMAGE_TYPES = { "image/webp": "webp", "image/jpeg": "jpg" } as const;
 

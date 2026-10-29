@@ -7,18 +7,17 @@ import { ArrowLeft, ArrowRight, Eye, EyeOff, ImagePlus, LoaderCircle, RefreshCw,
 import { arabic } from "../../app/(store)/translations";
 import { galleryLabels, SIZES } from "../../lib/catalog.mjs";
 import type { EditableVariant } from "../../lib/admin/catalog";
-import { ALLOWED_ACCEPT, UPLOAD_MAX_BYTES, humanSize } from "../../lib/media/rules";
+import { ALLOWED_ACCEPT, PHOTOS_MAX, UPLOAD_MAX_BYTES, humanSize } from "../../lib/media/rules";
 import { ADMIN_PATH } from "../../lib/site";
 import { GENDERS, categoryLabel, isGender, type Gender } from "../../lib/catalog-categories";
 import type { CatalogModel } from "../../lib/admin/queries";
 import { prepareImage, prepareVignette } from "./prepare-image";
 
-const PHOTOS = 6;
 const toNumber = (value: string) => (value.trim() === "" ? null : Number(value.trim()));
 
 /** Rôle de chaque photo sur la boutique, dans l'ordre de la galerie. */
 const photoRole = (index: number) => {
-  const label = galleryLabels[index];
+  const label = galleryLabels[index] ?? "Photo supplémentaire";
   if (index === 0) return `${label} · carte produit et panier`;
   if (index === 1) return `${label} · vignette du coloris`;
   return label;
@@ -28,8 +27,8 @@ const photoRole = (index: number) => {
  * Fiche complète d'un coloris : création ou modification.
  * Les photos sont envoyées dès qu'on les choisit : converties en WebP par le serveur
  * et rangées dans Cloudflare R2 (route /api/upload) ; la fiche
- * enregistre ensuite leur ordre avec le reste. Six photos sont nécessaires
- * pour mettre le coloris en ligne : la galerie de la boutique en montre six.
+ * enregistre ensuite leur ordre avec le reste. Autant de photos que voulu
+ * (10 au plus) ; une au moins pour mettre le coloris en ligne.
  */
 export default function VariantForm({ variant, models, modelId }: {
   variant?: EditableVariant;
@@ -74,7 +73,9 @@ export default function VariantForm({ variant, models, modelId }: {
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState<{ tone: "error" | "success" | "info"; text: string } | null>(null);
 
-  const complete = photos.length === PHOTOS;
+  const complete = photos.length > 0;
+  /** Filled slots, plus one empty slot to add the next photo (until the maximum). */
+  const slots = Math.min(photos.length + 1, PHOTOS_MAX);
 
   /** Dedicated thumbnail: made square 150×150 WebP here, then stored on R2 like the photos. */
   const uploadThumbnail = async (file: File) => {
@@ -246,12 +247,12 @@ export default function VariantForm({ variant, models, modelId }: {
       <section className="ad-panel">
         <div className="ad-panel-head">
           <div>
-            <h2>Photos <small className={complete ? "vz-ok" : "vz-warn"}>{photos.length}/{PHOTOS}</small></h2>
-            <p>Six photos, dans l’ordre de la galerie. Fond clair, paire entière et centrée, comme les photos existantes. Formats acceptés : JPEG, PNG, WebP, AVIF.</p>
+            <h2>Photos <small className={complete ? "vz-ok" : "vz-warn"}>{photos.length} / {PHOTOS_MAX} max</small></h2>
+            <p>De 1 à {PHOTOS_MAX} photos, dans l’ordre de la galerie (la 1re sert de carte produit). Fond clair, paire entière et centrée, comme les photos existantes. Formats acceptés : JPEG, PNG, WebP, AVIF.</p>
           </div>
         </div>
         <div className="vz-photos">
-          {Array.from({ length: PHOTOS }, (_, index) => {
+          {Array.from({ length: slots }, (_, index) => {
             const url = photos[index]?.url;
             const canFill = index <= photos.length;
             return (
@@ -352,7 +353,7 @@ export default function VariantForm({ variant, models, modelId }: {
         )}
         {variant && variant.orderLines > 0 && <span className="vz-hint">Déjà commandé : ce coloris peut être masqué, pas supprimé.</span>}
         {message && <span className={message.tone === "error" ? "ord-error" : message.tone === "success" ? "vz-saved" : "vz-hint"} role={message.tone === "error" ? "alert" : "status"}>{message.text}</span>}
-        {active && !complete && <span className="ord-error">En ligne : il faut les {PHOTOS} photos.</span>}
+        {active && !complete && <span className="ord-error">En ligne : il faut au moins une photo.</span>}
         <button type="button" className="ad-btn ad-btn-primary" onClick={save} disabled={busy || !name.trim()} aria-busy={saving}>
           {saving ? <LoaderCircle className="ad-spin" aria-hidden="true"/> : <Save aria-hidden="true"/>} {variant ? "Enregistrer" : "Créer le coloris"}
         </button>

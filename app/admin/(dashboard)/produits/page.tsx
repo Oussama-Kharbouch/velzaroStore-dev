@@ -74,7 +74,7 @@ export default async function ProductsPage({ searchParams }: { searchParams: Par
         <div style={{ margin: "18px 0" }}>
           <Alert tone="info">
             Modifiez ici le prix, la mise en ligne, le stock et la catégorie d’un coloris ; « Modifier la fiche » donne accès à
-            son nom, son nom arabe, sa couleur et ses 6 photos. Chaque enregistrement met la boutique à jour aussitôt.
+            son nom, son nom arabe, sa couleur et ses photos. Chaque enregistrement met la boutique à jour aussitôt.
             L’ordre d’affichage sur la boutique se règle dans « Ordre sur la boutique » ci-dessous.
             {unclassified > 0 && <> <strong>{unclassified} coloris non classé{unclassified > 1 ? "s" : ""}</strong> : choisissez leur catégorie
               ({categoryLabel(brand, "homme")}, {categoryLabel(brand, "femme")} ou Unisexe) — rien n’est classé automatiquement.</>}

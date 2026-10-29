@@ -1,11 +1,11 @@
 /**
  * Gestion des coloris depuis le dashboard : création, modification (nom, nom
- * arabe, couleur, prix, mise en ligne, 6 photos, stock par pointure), ordre
+ * arabe, couleur, prix, mise en ligne, photos, stock par pointure), ordre
  * d'affichage et suppression d'un brouillon. La boutique, rendue à chaque visite,
  * montre chaque modification aussitôt.
  *
  * Règles :
- * — un coloris en ligne a exactement 6 photos (la galerie de la boutique en montre 6) ;
+ * — un coloris en ligne a au moins une photo (sa carte sur la boutique), 10 au plus ;
  * — la boutique garde toujours au moins un coloris en ligne ;
  * — un coloris déjà commandé ne peut pas être supprimé, seulement masqué.
  */
@@ -15,14 +15,13 @@ import { z } from "zod";
 import { getDb, schema } from "../../db";
 import { SIZES } from "../catalog.mjs";
 import { GENDERS } from "../catalog-categories";
-import { isImageRef, slugify } from "../media/rules";
+import { PHOTOS_MAX, isImageRef, slugify } from "../media/rules";
 import { imageUrl } from "../r2";
 import { firstIssue, ko, ok, type Result } from "./respond";
 
 const { products, variants, variantSizes, productImages, orderItems } = schema;
 
 const PRICE_MAX = 100000;
-export const PHOTOS_PER_VARIANT = 6;
 
 type Tx = Parameters<Parameters<ReturnType<typeof getDb>["transaction"]>[0]>[0];
 
@@ -53,10 +52,10 @@ const priceFields = {
 const oldPriceRule = (v: { price: number; oldPrice: number | null }) => v.oldPrice === null || v.oldPrice > v.price;
 const oldPriceIssue = { message: "Le prix barré doit être supérieur au prix de vente (ou vide).", path: ["oldPrice"] };
 
-/** Un coloris en ligne doit avoir ses 6 photos. */
+/** Un coloris en ligne doit avoir au moins une photo. */
 const assertPhotosForActive = async (tx: Tx, id: number) => {
   const [{ n }] = await tx.select({ n: count() }).from(productImages).where(eq(productImages.variantId, id));
-  if (n < PHOTOS_PER_VARIANT) throw new Rejected(`Ajoutez les ${PHOTOS_PER_VARIANT} photos du coloris avant de le mettre en ligne (${n} pour l'instant).`);
+  if (n < 1) throw new Rejected("Ajoutez au moins une photo du coloris avant de le mettre en ligne.");
 };
 
 /** La boutique a besoin d'au moins un coloris en ligne. */
@@ -103,7 +102,7 @@ const fullSchema = z.object({
   // Short codes of the first catalogue (#fff) are accepted and written in full (#ffffff).
   hex: z.string().trim().regex(/^#([0-9a-fA-F]{3}|[0-9a-fA-F]{6})$/, "Couleur : un code comme #a8a297.")
     .transform((v) => (v.length === 4 ? `#${[...v.slice(1)].map((c) => c + c).join("")}` : v)),
-  photos: z.array(z.string().refine(isImageRef, "Référence de photo invalide.")).max(PHOTOS_PER_VARIANT, `${PHOTOS_PER_VARIANT} photos maximum.`),
+  photos: z.array(z.string().refine(isImageRef, "Référence de photo invalide.")).max(PHOTOS_MAX, `${PHOTOS_MAX} photos maximum.`),
   /** Model of the colourway (products.id). */
   productId: z.number({ invalid_type_error: "Choisissez le modèle." }).int().positive("Choisissez le modèle."),
   /** Gender: homme, femme, unisexe; null = not classified. */
@@ -112,8 +111,8 @@ const fullSchema = z.object({
   thumbnail: z.string().refine(isImageRef, "Vignette invalide.").nullable().default(null),
   ...priceFields,
 }).refine(oldPriceRule, oldPriceIssue)
-  .refine((v) => !v.active || v.photos.length === PHOTOS_PER_VARIANT, {
-    message: `Un coloris en ligne doit avoir ses ${PHOTOS_PER_VARIANT} photos : ajoutez-les ou laissez-le masqué.`, path: ["photos"],
+  .refine((v) => !v.active || v.photos.length > 0, {
+    message: "Un coloris en ligne doit avoir au moins une photo : ajoutez-en une ou laissez-le masqué.", path: ["photos"],
   });
 
 const writePhotos = async (tx: Tx, id: number, name: string, photos: string[]) => {
