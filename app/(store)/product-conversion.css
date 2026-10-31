@@ -1,0 +1,60 @@
+/* Product conversion enhancements — scoped to product-detail pages. */
+.vz-promo-top{width:100%;background:linear-gradient(100deg,#c90023,#f31b38);color:#fff;text-align:center;display:grid;justify-items:center;gap:3px;padding:12px 18px;line-height:1.4}
+.vz-promo-top strong{font-size:15px;font-weight:800}
+.vz-promo-top span{font-size:12px;font-weight:650}
+.vz-hero-thumbnails{display:flex;gap:9px;overflow-x:auto;padding:8px 2px 14px;scrollbar-width:thin;scroll-snap-type:x proximity}
+.vz-hero-thumbnails button{flex:0 0 74px;width:74px;height:72px;background:#f5f7f6;border:2px solid transparent;border-radius:12px;padding:4px;overflow:hidden;scroll-snap-align:start}
+.vz-hero-thumbnails button[aria-pressed=true]{border-color:#008e43}
+.vz-hero-thumbnails img{width:100%;height:100%;object-fit:contain}
+.vz-detail-subtitle{font-size:12px;margin:0 0 10px;color:#555}
+.vz-price-promo{margin-top:12px;display:flex;align-items:center;flex-wrap:wrap;gap:10px}
+.vz-price-promo .detail-price{margin:0!important;color:#09813b!important;font-weight:800!important}
+.vz-savings{font-size:12px;color:#b4122d;background:#ffe8ea;border-radius:999px;padding:6px 10px;font-weight:750}
+.vz-countdown{background:#fff2f3;border:1px solid #ffd5d9;border-radius:14px;padding:13px 12px;display:flex;gap:16px;align-items:center;justify-content:space-between;margin:16px 0;color:#b8001d}
+.vz-countdown>strong{font-size:13px;max-width:44%}
+.vz-countdown-grid{display:flex;gap:6px;flex:1;justify-content:flex-end}
+.vz-countdown-grid>div{flex:1;max-width:70px;min-width:48px;background:#ffe0e4;border-radius:10px;display:grid;justify-items:center;padding:5px 3px}
+.vz-countdown-grid b{font-size:21px;font-weight:800;line-height:1.2;font-variant-numeric:tabular-nums}
+.vz-countdown-grid span{font-size:10px}
+.vz-size-hint{font-size:13px;color:#777;margin:12px 0}
+.vz-show-size{display:flex;align-items:center;justify-content:space-between;gap:12px;width:100%;padding:15px 18px;background:#f5f7f5;border:1px solid #dce8de;border-radius:12px;font-weight:700}
+.vz-show-size:hover{border-color:#008e43}
+.vz-size-picker{background:#f7faf8;border:1px solid #e0eee6;border-radius:14px;padding:15px;margin-top:12px;scroll-margin-top:120px}
+.vz-size-picker .sizes button.chosen{background:#068a43!important;color:#fff!important;border-color:#068a43!important}
+.vz-size-picker .sizes button:disabled{opacity:.35!important}
+.vz-selling-points,.vz-reviews{max-width:1180px;margin:30px auto;padding:26px 20px;background:#fff}
+.vz-selling-points h2,.vz-reviews h2{font-weight:800;font-size:clamp(21px,3vw,29px);line-height:1.4;margin:0 0 18px}
+.vz-perks{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.vz-perks>div{display:flex;flex-direction:column;gap:5px;background:#f5faf7;border-radius:15px;padding:18px;align-items:flex-start}
+.vz-perks svg{color:#078442}
+.vz-perks b{font-size:15px}
+.vz-perks span{font-size:12px;color:#5d6963}
+.vz-product-copy{padding:16px 3px;color:#58645f;font-size:14px;line-height:1.8}
+.vz-delivery-bar{display:flex;flex-wrap:wrap;gap:12px;background:#eaf8ee;border-radius:13px;padding:14px;justify-content:space-around;margin-top:12px}
+.vz-delivery-bar span{display:flex;align-items:center;gap:8px;font-size:13px;color:#166a39}
+.vz-reviews{border-top:1px solid #e9eee9;padding-top:24px}
+.vz-reviews-heading{display:flex;align-items:center;gap:12px;margin-bottom:16px}
+.vz-reviews h2{margin:0}
+.vz-reviews-heading p{margin:3px 0 0;color:#777;font-size:13px}
+.vz-review-icon{background:#e4f6e9;color:#139747;border-radius:100px;display:grid;place-items:center;width:44px;height:44px}
+.vz-review-gallery{display:flex;gap:14px;overflow-x:auto;padding:4px 2px 18px;scroll-snap-type:x mandatory}
+.vz-review-gallery a{flex:0 0 clamp(180px,27vw,260px);scroll-snap-align:start;border:1px solid #e8e8e8;border-radius:14px;overflow:hidden;background:#f8f8f8;text-align:center}
+.vz-review-gallery img{width:100%;max-height:370px;object-fit:contain}
+.vz-review-gallery a span{display:flex;gap:6px;align-items:center;justify-content:center;padding:8px;font-size:12px}
+.vz-review-empty{border:1px dashed #d7e6dc;background:#f8faf9;color:#69746e;border-radius:14px;padding:20px;text-align:center;font-size:13px}
+.vz-sticky-buy{display:none}
+@media(max-width:768px){
+ .vz-promo-top{padding:8px 10px}.vz-promo-top strong{font-size:13px}.vz-promo-top span{font-size:11px}
+ .vz-hero-thumbnails{padding:6px 14px 12px}
+ .vz-selling-points,.vz-reviews{margin:16px auto;padding:20px 16px}
+ .vz-perks{grid-template-columns:repeat(3,minmax(0,1fr));gap:7px}
+ .vz-perks>div{padding:12px 9px}.vz-perks b{font-size:12px}.vz-perks span{font-size:11px}
+ .vz-countdown{gap:8px;padding:10px 8px}.vz-countdown>strong{font-size:11px}.vz-countdown-grid b{font-size:19px}
+ .vz-sticky-buy{position:fixed;z-index:95;bottom:0;left:0;right:0;display:flex;align-items:center;gap:12px;padding:10px 12px calc(10px + env(safe-area-inset-bottom));background:#fff;box-shadow:0 -8px 24px #00120b22;border-top:1px solid #e7eee9}
+ .vz-sticky-buy .vz-sticky-price{white-space:nowrap;color:#00843e;font-weight:800;font-size:18px}
+ .vz-sticky-buy button{flex:1;display:flex;align-items:center;justify-content:center;gap:10px;background:#008a43;color:#fff;border-radius:13px;min-height:51px;font-size:18px;font-weight:800}
+ .prestige-detail{padding-bottom:95px}
+ .mobile-nav.nav-on-product{display:none!important}
+ body:has(.vz-sticky-buy) .whatsapp-float{bottom:92px!important}
+}
+@media(max-width:365px){.vz-perks{grid-template-columns:1fr}.vz-countdown-grid>div{min-width:40px}.vz-sticky-buy{gap:7px}.vz-sticky-buy .vz-sticky-price{font-size:16px}.vz-sticky-buy button{font-size:15px}}
