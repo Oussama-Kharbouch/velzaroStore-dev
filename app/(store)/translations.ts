@@ -1,6 +1,9 @@
 export const arabic:Record<string,string>={
 'Sélectionnez votre pointure pour ajouter au panier.':'اختر مقاسك لإضافة الحذاء إلى السلة.',
 'Je valide ma commande':'أؤكد طلبي','Total à payer':'المبلغ الإجمالي للدفع',
+'Je confirme ma commande':'أكد الطلب ديالي',
+'Merci pour votre confiance ❤️ Nous avons bien reçu votre commande et nous vous contacterons pour confirmer les informations.':'شكراً على الثقة ديالك ❤️ توصلنا بالطلب وغادي نتواصلو معاك لتأكيد المعلومات.',
+'Vérifiez votre numéro de téléphone marocain (06 ou 07).':'تحقق من رقم الهاتف المغربي (06 أو 07).',
 'Lilas | Blanc':'ليلكي | أبيض','Noir | Blanc':'أسود | أبيض',
 'Rose | Blanc':'وردي | أبيض',
 'Laçage':'نظام الربط','Vitesse':'سريع','Inclinaison talon-orteils':'فرق الارتفاع بين الكعب والأصابع','Caractéristiques':'المواصفات',

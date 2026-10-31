@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import Store from "../../store";
 import { getStoreCatalog, getStoreMedia } from "../../../../lib/store-catalog";
+import { getPromoCampaign } from "../../../../lib/promo";
 import { shopLang } from "../../../../lib/shop-lang";
 
 /**
@@ -27,5 +28,5 @@ export default async function ProductPage({ params }: { params: Params }) {
   if (!product) redirect("/boutique");
   // Right colourway under another model's address: the proper one.
   if (model !== product.modelSlug) redirect(`/${product.modelSlug}/${variant}`);
-  return <Store catalog={catalog} media={getStoreMedia()} initialLang={await shopLang()} initialProductId={variant}/>;
+  return <Store catalog={catalog} media={getStoreMedia()} promo={getPromoCampaign()} initialLang={await shopLang()} initialProductId={variant}/>;
 }
