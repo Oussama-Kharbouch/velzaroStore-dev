@@ -17,12 +17,16 @@ const PROMO_END = process.env.NEXT_PUBLIC_VZ_PROMO_END_AT || '';
 export const verifiedWhatsappScreenshots: string[] = [];
 
 export function ConversionPromoBar({ lang }: { lang: 'ar' | 'fr' }) {
+  const [now,setNow]=useState<number|null>(null);
+  useEffect(()=>{if(!PROMO_END||!Number.isFinite(Date.parse(PROMO_END)))return;const update=()=>setNow(Date.now());update();const id=setInterval(update,1000);return()=>clearInterval(id)},[]);
+  const deadline=Date.parse(PROMO_END);
+  const seconds=now===null||!Number.isFinite(deadline)?0:Math.max(0,Math.floor((deadline-now)/1000));
+  const timer=seconds>0?[Math.floor(seconds/3600),Math.floor(seconds%3600/60),seconds%60]:null;
   return <div className="vz-promo-top" dir={lang==='ar'?'rtl':'ltr'}>
-    <strong>{lang==='ar'?'🔥 عرض خاص على Cloudtlite':'🔥 Offre spéciale Cloudtlite'}</strong>
-    <span>{lang==='ar'?'🚚 التوصيل مجاني + الدفع عند الاستلام':'🚚 Livraison gratuite · Paiement à la réception'}</span>
+    <div className="vz-promo-copy"><strong>{lang==='ar'?'🔥 عرض خاص على Cloudtlite':'🔥 Offre spéciale Cloudtlite'}</strong><span>{lang==='ar'?'🚚 التوصيل مجاني + الدفع عند الاستلام':'🚚 Livraison gratuite · Paiement à la réception'}</span></div>
+    {timer&&<div className="vz-promo-timer" aria-label={lang==='ar'?'الوقت المتبقي للعرض':'Temps restant'}>{timer.map((n,i)=><div key={i}><b>{String(n).padStart(2,'0')}</b><small>{lang==='ar'?['ساعة','دقيقة','ثانية'][i]:['h','min','s'][i]}</small></div>)}</div>}
   </div>;
 }
-
 export function RealCountdown({ lang }: { lang: 'ar' | 'fr' }) {
   const [remaining,setRemaining] = useState<number|null>(null);
   useEffect(() => {
@@ -44,13 +48,19 @@ export function RealCountdown({ lang }: { lang: 'ar' | 'fr' }) {
   </div>;
 }
 
-export function ProductSellingPoints({ lang, cloudtilt }: {lang:'ar'|'fr';cloudtilt:boolean}) {
+export function ProductSellingPoints({ lang, cloudtilt, photos }: {lang:'ar'|'fr';cloudtilt:boolean;photos:string[]}) {
   return <section className="vz-selling-points" dir={lang==='ar'?'rtl':'ltr'} aria-label={lang==='ar'?'مميزات المنتج':'Atouts du produit'}>
     <h2>{lang==='ar'?'علاش غادي تعجبك هاد السبرديلة؟':'Pourquoi choisir cette paire ?'}</h2>
     <div className="vz-perks">
-      <div><Wind size={22}/><b>{lang==='ar'?'نسيج شبكي':'Maille textile'}</b><span>{lang==='ar'?'تصميم كيساعد على التهوية':'Tige aérée pour un usage quotidien'}</span></div>
-      <div><Footprints size={22}/><b>{lang==='ar'?'ستايل مريح':'Confort au quotidien'}</b><span>{lang==='ar'?'نعل بتصميم مناسب للمشي اليومي':'Semelle au profil sculpté pour la marche'}</span></div>
-      <div><Feather size={22}/><b>{lang==='ar'?'ستايل عصري':'Style polyvalent'}</b><span>{lang==='ar'?'كتجي مع اللوك الكاجوال والسبور':'Avec vos tenues décontractées'}</span></div>
+      {[
+        {img:photos[3]||photos[0],titleAr:'راحة فالمشي',titleFr:'Confort de marche',descriptionAr:'نعل بتصميم بارز للمشي اليومي',descriptionFr:'Une semelle au design sculpté'},
+        {img:photos[4]||photos[0],titleAr:'نسيج شبكي',titleFr:'Maille textile',descriptionAr:'تصميم كيساعد على التهوية',descriptionFr:'Tige en maille aérée'},
+        {img:photos[2]||photos[0],titleAr:'تفاصيل عملية',titleFr:'Détails pratiques',descriptionAr:'شوف الرباط والتفاصيل الحقيقية',descriptionFr:'Découvrez les lacets et les finitions'},
+        {img:photos[0],titleAr:'ستايل عصري',titleFr:'Style moderne',descriptionAr:'تناسب اللوك الكاجوال',descriptionFr:'Pour vos looks casual'}
+      ].map((feature,i)=><article key={i}>
+        <div className="vz-feature-image">{feature.img&&<img src={feature.img} alt={lang==='ar'?feature.titleAr:feature.titleFr} loading="lazy"/>}</div>
+        <div className="vz-feature-copy"><b>{lang==='ar'?feature.titleAr:feature.titleFr}</b><span>{lang==='ar'?feature.descriptionAr:feature.descriptionFr}</span></div>
+      </article>)}
     </div>
     {cloudtilt && <p className="vz-product-copy">{lang==='ar'?'Cloudtlite — Original: تصميم عصري، نسيج شبكي ونعل بارز. شوف الصور الحقيقية للمنتج واختار اللون والمقاس اللي يناسبك.':'Cloudtlite — Original : silhouette moderne, textile en maille et semelle sculptée. Consultez les photos du coloris choisi pour bien voir les détails.'}</p>}
     <div className="vz-delivery-bar">
