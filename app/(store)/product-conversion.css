@@ -58,3 +58,59 @@
  body:has(.vz-sticky-buy) .whatsapp-float{bottom:92px!important}
 }
 @media(max-width:365px){.vz-perks{grid-template-columns:1fr}.vz-countdown-grid>div{min-width:40px}.vz-sticky-buy{gap:7px}.vz-sticky-buy .vz-sticky-price{font-size:16px}.vz-sticky-buy button{font-size:15px}}
+
+/* VELZARO prototype refinement */
+.vz-promo-top{display:flex;align-items:center;justify-content:center;gap:18px;flex-wrap:wrap;padding:9px 12px}
+.vz-promo-copy{display:grid;gap:2px;text-align:center}
+.vz-promo-timer{display:flex;gap:4px}
+.vz-promo-timer div{display:grid;place-items:center;background:#fff;color:#c40022;border-radius:8px;min-width:42px;padding:4px 7px}
+.vz-promo-timer b{font-weight:800;font-size:17px;font-variant-numeric:tabular-nums}
+.vz-promo-timer small{font-size:10px}
+.vz-color-label{font-size:13px;font-weight:800;margin:12px 0 6px}
+.vz-purchase-hint{color:#66736a;font-size:12px;margin:12px 0}
+.vz-primary-action{margin:12px 0}
+.vz-primary-action .btn{background:#008c43!important;color:white!important;min-height:54px!important;width:100%!important;border:0!important;border-radius:12px!important;display:flex!important;align-items:center;justify-content:center;gap:12px;font-size:17px!important;font-weight:800!important}
+.vz-top-trust{display:flex;gap:12px;justify-content:space-between;align-items:center;background:#ebf8ef;color:#116a37;border-radius:12px;padding:14px 12px;margin:14px 0}
+.vz-top-trust span{display:flex;align-items:center;gap:7px;font-weight:700;font-size:12px}
+.vz-size-overlay{position:fixed;z-index:400;inset:0;background:#0a1510ac;display:flex;align-items:flex-end;justify-content:center}
+.vz-size-sheet{background:white;border-radius:24px 24px 0 0;padding:24px 20px calc(24px + env(safe-area-inset-bottom));width:min(100%,560px);box-shadow:0 -10px 35px #0002}
+.vz-sheet-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
+.vz-sheet-head small{font-size:12px;color:#758079}.vz-sheet-head h2{font-size:23px;font-weight:800;margin:2px 0}
+.vz-sheet-head button{border:1px solid #eee;border-radius:50%;width:42px;height:42px;display:grid;place-items:center}
+.vz-size-sheet>p{font-size:13px;color:#666;margin:14px 0}
+.vz-sheet-sizes{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px}
+.vz-sheet-sizes button{background:#f7f8f7;border:1px solid #d7ded9;border-radius:10px;padding:14px 3px;font-size:16px;font-weight:800}
+.vz-sheet-sizes button:disabled{opacity:.3;text-decoration:line-through}
+.vz-sheet-sizes button:focus-visible{outline:2px solid #008d44}
+.vz-size-sheet .vz-sheet-trust{display:flex;align-items:center;justify-content:center;gap:7px;color:#057f3c}
+.prestige-detail .color-photos{display:flex!important;flex-wrap:nowrap!important;overflow-x:auto!important;gap:8px!important;scrollbar-width:thin!important;padding:6px 0 10px!important}
+.prestige-detail .color-photos button{flex:0 0 68px!important;border:2px solid transparent!important;border-radius:12px;padding:3px!important;background:#f4f7f5}
+.prestige-detail .color-photos button.chosen{border-color:#008c43!important}
+.prestige-detail .color-photos .color-photo-frame.color-thumb{width:100%!important;height:62px!important}
+.prestige-detail .color-photos button img{width:100%;height:100%;object-fit:contain}
+.vz-perks{display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr))!important;gap:10px!important}
+.vz-perks article{border:1px solid #e8efeb;background:#f8faf9;border-radius:13px;overflow:hidden;min-width:0}
+.vz-feature-image{aspect-ratio:5/4;background:#f2f5f4;overflow:hidden}.vz-feature-image img{width:100%;height:100%;object-fit:contain}
+.vz-feature-copy{display:grid;gap:4px;padding:12px}
+.vz-feature-copy b{font-size:14px}.vz-feature-copy span{font-size:12px;color:#617067}
+@media(max-width:768px){
+ .vz-promo-copy strong{font-size:12px}.vz-promo-copy span{font-size:10px}
+ .prestige-detail{padding-top:6px!important}
+ .prestige-detail .breadcrumb{margin-bottom:5px!important}
+ .prestige-detail .gallery-viewport{height:320px!important;overflow:hidden!important;background:#f5f7f6!important}
+ .prestige-detail .gallery-track{height:320px!important}
+ .prestige-detail .gallery-track .gallery.original-photos{height:320px!important;min-height:0!important}
+ .prestige-detail .gallery-track .gallery.original-photos>img{max-height:320px!important;object-fit:contain!important}
+ .prestige-detail .details{padding-top:5px!important}
+ .prestige-detail .details h1.product-title{font-size:23px!important;line-height:1.3!important;margin:4px 0!important;font-weight:800!important}
+ .vz-detail-subtitle{margin-bottom:6px!important}
+ .vz-hero-thumbnails{padding:5px 0 8px!important;gap:7px!important}
+ .vz-hero-thumbnails button{flex:0 0 64px!important;width:64px!important;height:60px!important}
+ .vz-price-promo{margin:5px 0!important}
+ .vz-price-promo .detail-price{font-size:26px!important}
+ .vz-perks{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+ .vz-feature-copy b{font-size:13px}.vz-feature-copy span{font-size:11px}
+ .vz-sticky-buy{padding:8px 10px calc(8px + env(safe-area-inset-bottom))!important}
+ .vz-selling-points{margin-top:10px!important}
+}
+@media(max-width:450px){.vz-top-trust span{font-size:10px}.vz-promo-top{gap:7px;padding:8px}.vz-promo-timer>div{min-width:38px;padding:3px 5px}.prestige-detail .gallery-viewport,.prestige-detail .gallery-track,.prestige-detail .gallery-track .gallery.original-photos{height:300px!important}}
