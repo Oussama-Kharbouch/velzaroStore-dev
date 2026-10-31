@@ -39,16 +39,17 @@ export function PromoBar({ lang, promo }: { lang: Lang; promo: PromoCampaign | n
   const left = active ? Math.max(0, Math.floor((promo.endAt - now) / 1000)) : 0;
   const hours = promo && promo.startAt !== null ? Math.round((promo.endAt - promo.startAt) / 3600000) : null;
   const units = lang === 'ar' ? ['ساعة', 'دقيقة', 'ثانية'] : ['heures', 'min', 'sec'];
+  // Without a running campaign there is nothing to announce: no bar at all.
+  if (!active) return null;
   return <div className="vz-promo" dir={lang === 'ar' ? 'rtl' : 'ltr'} role="region" aria-label={pick(lang, 'العرض الحالي', 'Offre en cours')}>
-    {active && <strong className="vz-promo-offer">{hours
+    <strong className="vz-promo-offer">{hours
       ? pick(lang, `🔥 عرض خاص لمدة ${hours} ساعة فقط`, `🔥 Offre spéciale de ${hours} h seulement`)
-      : pick(lang, '🔥 عرض خاص لفترة محدودة', '🔥 Offre spéciale à durée limitée')}</strong>}
-    <span className="vz-promo-delivery">{pick(lang, '🚚 التوصيل مجاني لجميع أنحاء المغرب + الدفع عند الاستلام', '🚚 Livraison gratuite partout au Maroc + paiement à la livraison')}</span>
-    {active && <div className="vz-promo-timer" dir="ltr" role="timer" aria-label={pick(lang, 'الوقت المتبقي للعرض', 'Temps restant avant la fin de l’offre')}>
+      : pick(lang, '🔥 عرض خاص لفترة محدودة', '🔥 Offre spéciale à durée limitée')}</strong>
+    <div className="vz-promo-timer" dir="ltr" role="timer" aria-label={pick(lang, 'الوقت المتبقي للعرض', 'Temps restant avant la fin de l’offre')}>
       {[Math.floor(left / 3600), Math.floor((left % 3600) / 60), left % 60].map((value, i) => <div key={i}>
         <b suppressHydrationWarning>{String(value).padStart(2, '0')}</b><small>{units[i]}</small>
       </div>)}
-    </div>}
+    </div>
   </div>;
 }
 

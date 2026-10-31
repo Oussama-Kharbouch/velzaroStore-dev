@@ -8,7 +8,6 @@
 /* ---------------------------------------------------------------- red bar */
 .vz-promo{background:var(--vz-red);color:#fff;text-align:center;display:flex;flex-direction:column;align-items:center;gap:3px;padding:9px 12px 10px;line-height:1.35}
 .vz-promo-offer{font-size:15px;font-weight:800}
-.vz-promo-delivery{font-size:12.5px;font-weight:600}
 .vz-promo-timer{display:flex;gap:6px;margin-top:5px}
 .vz-promo-timer>div{min-width:54px;background:#fff;color:var(--vz-red);border-radius:9px;padding:3px 6px 4px;display:grid;justify-items:center;line-height:1.15;box-shadow:0 2px 6px #0000001f}
 .vz-promo-timer b{font-size:19px;font-weight:800;font-variant-numeric:tabular-nums}
@@ -152,7 +151,6 @@ html[dir=rtl] .vz-chevron{transform:scaleX(-1)}
 @media(max-width:768px){
   .vz-promo{padding:8px 10px 9px}
   .vz-promo-offer{font-size:14px}
-  .vz-promo-delivery{font-size:11.5px}
   .vz-promo-timer{gap:5px;margin-top:4px}
   .vz-promo-timer>div{min-width:48px}
   .vz-promo-timer b{font-size:17px}
@@ -169,8 +167,8 @@ html[dir=rtl] .vz-chevron{transform:scaleX(-1)}
   .vz-pdp .gallery-viewport.vz-main-photo{margin-right:12px}
   .vz-discount{top:10px;left:10px;font-size:14px;padding:4px 11px}
   .vz-fav{top:9px;right:9px;width:38px;height:38px}
-  .vz-photo-arrow{width:34px;height:34px}
-  .vz-photo-arrow.prev{left:8px}.vz-photo-arrow.next{right:8px}
+  /* Mobile: photos change by swiping or with the thumbnails, no arrows over the shoe. */
+  .vz-photo-arrow{display:none}
   .vz-thumbs{padding:10px 12px 2px;gap:8px;scroll-padding-inline:12px}
   .vz-thumbs button{flex-basis:64px;height:62px;border-radius:11px}
   .vz-pdp-info{padding:14px 16px 0}
