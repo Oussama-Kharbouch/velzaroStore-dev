@@ -30,17 +30,18 @@ const EXCHANGE_DAYS = 7;
  * by side (home page and shop sections).
  */
 export function PromoBar({ lang, promo, variant = 'product' }: { lang: Lang; promo: PromoCampaign | null; variant?: 'product' | 'shop' }) {
-  const [now, setNow] = useState(() => Date.now());
+  // Browser time, known once the page is interactive: until then the boxes show -- (no jump in the count).
+  const [now, setNow] = useState<number | null>(null);
   useEffect(() => {
     if (!promo) return;
-    // The server rendered its own time: the browser's clock takes over at the first frame.
+    // The server rendered its own time: the browser's clock takes over right after hydration.
     const tick = () => setNow(Date.now());
-    const first = requestAnimationFrame(tick);
+    const first = setTimeout(tick, 0);
     const id = setInterval(tick, 1000);
-    return () => { cancelAnimationFrame(first); clearInterval(id); };
+    return () => { clearTimeout(first); clearInterval(id); };
   }, [promo]);
-  const active = promo !== null && (promo.startAt === null || now >= promo.startAt) && now < promo.endAt;
-  const left = active ? Math.max(0, Math.floor((promo.endAt - now) / 1000)) : 0;
+  const active = promo !== null && (now === null || ((promo.startAt === null || now >= promo.startAt) && now < promo.endAt));
+  const left = active && now !== null ? Math.max(0, Math.floor((promo.endAt - now) / 1000)) : null;
   const hours = promo && promo.startAt !== null ? Math.round((promo.endAt - promo.startAt) / 3600000) : null;
   const units = lang === 'ar' ? ['ساعة', 'دقيقة', 'ثانية'] : ['heures', 'min', 'sec'];
   // Without a running campaign there is nothing to announce: no bar at all.
@@ -53,8 +54,8 @@ export function PromoBar({ lang, promo, variant = 'product' }: { lang: Lang; pro
       ? <div className="vz-promo-copy">{offer}<span className="vz-promo-delivery"><Truck size={18} aria-hidden="true"/>{pick(lang, 'التوصيل مجاني لجميع أنحاء المغرب + الدفع عند الاستلام', 'Livraison gratuite partout au Maroc + paiement à la livraison')}</span></div>
       : offer}
     <div className="vz-promo-timer" dir="ltr" role="timer" aria-label={pick(lang, 'الوقت المتبقي للعرض', 'Temps restant avant la fin de l’offre')}>
-      {[Math.floor(left / 3600), Math.floor((left % 3600) / 60), left % 60].map((value, i) => <div key={i}>
-        <b suppressHydrationWarning>{String(value).padStart(2, '0')}</b><small>{units[i]}</small>
+      {(left === null ? [null, null, null] : [Math.floor(left / 3600), Math.floor((left % 3600) / 60), left % 60]).map((value, i) => <div key={i}>
+        <b>{value === null ? '--' : String(value).padStart(2, '0')}</b><small>{units[i]}</small>
       </div>)}
     </div>
   </div>;

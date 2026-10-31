@@ -4,12 +4,13 @@
  * une modification du dashboard est visible aussitôt.
  */
 import "server-only";
-import { and, asc, eq, inArray } from "drizzle-orm";
+import { and, asc, eq, inArray, isNull, notInArray, sql } from "drizzle-orm";
 import { getDb, schema } from "../db";
 import { EXTRA_MODELS, OLD_PRICE, PRICE, PRODUCT, SIZES, galleryLabels, legacyPhotoPaths, photoKeys, products as staticProducts, siteImages } from "./catalog.mjs";
 import { imageKey, imageUrl, siteImageUrl } from "./r2";
+import { CLOSING_STATUSES } from "./orders/status";
 
-const { products, variants, variantSizes, productImages } = schema;
+const { products, variants, variantSizes, productImages, orders, orderItems } = schema;
 
 export type StoreProduct = {
   /** Slug du coloris : identifiant du panier et de l’adresse du produit (/<model>/<id>). */
@@ -27,6 +28,8 @@ export type StoreProduct = {
   promotion: boolean;
   /** Gender chosen in the dashboard (homme, femme, unisexe); null = not classified (shown to everyone). */
   gender: string | null;
+  /** Pairs sold (orders not deleted, nor cancelled, refused or returned): order of the "best sellers" of the home page. */
+  sold: number;
   price: number;
   oldPrice: number | null;
   sizes: { size: number; available: boolean }[];
@@ -40,7 +43,7 @@ export type StoreProduct = {
 
 /** Catalogue intégré au code, utilisé si la base ne répond pas : la boutique reste en ligne. */
 const fallbackCatalog = (): StoreProduct[] => staticProducts.map((p) => ({
-  ...p, model: PRODUCT.name, modelSlug: PRODUCT.slug, brand: null, nameAr: null, gender: null, price: PRICE, oldPrice: OLD_PRICE, sizes: SIZES.map((size) => ({ size, available: true })),
+  ...p, model: PRODUCT.name, modelSlug: PRODUCT.slug, brand: null, nameAr: null, gender: null, sold: 0, price: PRICE, oldPrice: OLD_PRICE, sizes: SIZES.map((size) => ({ size, available: true })),
   photos: photoKeys[p.id].map((key, i) => siteImageUrl({ key, legacy: legacyPhotoPaths[p.id][i] })),
   photoKeys: photoKeys[p.id],
   thumbnail: siteImageUrl({ key: photoKeys[p.id][0], legacy: legacyPhotoPaths[p.id][0] }),
@@ -95,10 +98,15 @@ export async function getStoreCatalog(): Promise<StoreProduct[]> {
     if (!rows.length) return fallbackCatalog();
 
     const ids = rows.map((r) => r.id);
-    const [sizes, images] = await Promise.all([
+    const [sizes, images, sales] = await Promise.all([
       db.select().from(variantSizes).where(inArray(variantSizes.variantId, ids)).orderBy(asc(variantSizes.size)),
       db.select().from(productImages).where(inArray(productImages.variantId, ids)).orderBy(asc(productImages.position)),
+      db.select({ variantId: orderItems.variantId, sold: sql<number>`sum(${orderItems.quantity})::int` })
+        .from(orderItems).innerJoin(orders, eq(orders.id, orderItems.orderId))
+        .where(and(inArray(orderItems.variantId, ids), isNull(orders.deletedAt), notInArray(orders.status, [...CLOSING_STATUSES])))
+        .groupBy(orderItems.variantId),
     ]);
+    const soldBy = new Map(sales.map((s) => [s.variantId, Number(s.sold)]));
     // Rayon et promotion ne sont pas (encore) en base : ceux du catalogue intégré.
     const extra = new Map(staticProducts.map((p) => [p.id, p]));
 
@@ -113,6 +121,7 @@ export async function getStoreCatalog(): Promise<StoreProduct[]> {
       category: extra.get(r.slug)?.category ?? "mixte",
       promotion: extra.get(r.slug)?.promotion ?? false,
       gender: r.gender,
+      sold: soldBy.get(r.id) ?? 0,
       price: r.price,
       oldPrice: r.oldPrice !== null && r.oldPrice > r.price ? r.oldPrice : null,
       sizes: sizes.filter((s) => s.variantId === r.id).map((s) => ({ size: s.size, available: s.stock === null || s.stock > 0 })),
