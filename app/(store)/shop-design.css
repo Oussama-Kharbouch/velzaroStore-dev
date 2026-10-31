@@ -1,0 +1,129 @@
+/*
+ * Shop design (home page and shop sections): serif logo with its gold stroke, white header
+ * (menu, language, search, cart), red offer bar, category buttons, product cards and the
+ * bottom bar on phones. The header and the logo are shared by every shop page.
+ */
+:root{--vz-shop-green:#0b6b39;--vz-shop-green-2:#12813f;--vz-shop-bg:#f6f6f3;--vz-logo:#0b3b24;--vz-gold:#c9a35b}
+
+/* ----------------------------------------------------------------- logo */
+:root body .logo.logo{display:inline-block;position:relative;padding-bottom:.3em;white-space:nowrap;direction:ltr;unicode-bidi:isolate;font-family:'Libre Caslon Text',Georgia,'Times New Roman',serif;font-weight:700;color:var(--vz-logo);letter-spacing:.01em;line-height:1;text-decoration:none}
+:root body .logo.logo small{font-family:var(--font-sans);font-weight:500;color:#2a2a2a;letter-spacing:0}
+.logo.logo::after{content:'';position:absolute;left:8%;right:14%;bottom:0;height:.28em;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 16' preserveAspectRatio='none'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' x2='1'%3E%3Cstop offset='0' stop-color='%23b8893b' stop-opacity='.15'/%3E%3Cstop offset='.55' stop-color='%23d6ae5f'/%3E%3Cstop offset='1' stop-color='%23b8893b' stop-opacity='.35'/%3E%3C/linearGradient%3E%3C/defs%3E%3Cpath d='M2 14C60 2 140 1 198 8C140 5 62 7 2 14Z' fill='url(%23g)'/%3E%3C/svg%3E") center/100% 100% no-repeat}
+
+/* --------------------------------------------------------------- header */
+.main-header.vz-header{display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);grid-template-rows:auto;align-items:center;gap:10px;height:84px;padding:0 24px;background:#fffffffa;border-bottom:1px solid #ecebe6}
+.main-header.vz-header>.logo{justify-self:center;font-size:40px}
+.main-header.vz-header>.logo small{font-size:.5em}
+.vz-header-side{display:flex;align-items:center;gap:14px;min-width:0}
+.vz-header-end{justify-content:flex-end}
+.vz-icon-btn{position:relative;display:grid;place-items:center;width:44px;height:44px;border-radius:12px;color:#151515;background:none}
+.vz-icon-btn:hover{background:#f1f1ee}
+.vz-cart-btn b{position:absolute;top:-1px;right:-5px;min-width:22px;height:22px;padding:0 5px;border-radius:11px;background:var(--vz-shop-green);color:#fff;border:2px solid #fff;font-size:12px;font-weight:800;line-height:18px;text-align:center}
+.vz-lang{display:flex;align-items:center;gap:7px;direction:ltr;white-space:nowrap}
+.vz-lang button{padding:4px 2px;background:none;color:#666;font-size:15px;font-weight:500}
+.vz-lang button[aria-pressed=true]{color:#111;font-weight:800}
+.vz-lang span{color:#c2c2c2}
+.main-header.vz-header .header-pages{display:flex;gap:26px;margin-inline-end:8px;font-size:14px}
+.main-header.vz-header.product-header{display:grid}
+
+/* --------------------------------------------------------------- red bar */
+.vz-promo.vz-promo-shop{flex-direction:row;justify-content:center;align-items:center;gap:18px;padding:11px 16px;background:linear-gradient(110deg,#97001a 0%,#d40a27 42%,#b3001f 70%,#8f0018 100%)}
+.vz-promo-copy{display:grid;gap:4px;text-align:start}
+.vz-promo-shop .vz-promo-offer{font-size:18px}
+.vz-promo-delivery{display:flex;align-items:center;gap:8px;font-size:13px;font-weight:600}
+.vz-promo-shop .vz-promo-timer{margin:0;padding-inline-start:18px;border-inline-start:1px solid #ffffff59}
+
+/* ------------------------------------------------------------ shop page */
+.vz-shop{background:var(--vz-shop-bg);padding:18px 24px 40px;min-height:60vh}
+.vz-shop>*{max-width:1240px;margin-inline:auto}
+.vz-visually-hidden{position:absolute!important;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap;border:0}
+.vz-shop-title{margin:0 auto 12px;font-size:24px;font-weight:800;color:#111}
+.vz-chips{border:0;justify-content:flex-start;display:flex;gap:12px;overflow-x:auto;padding:4px 2px 18px;scrollbar-width:none}
+.vz-chips::-webkit-scrollbar{display:none}
+.vz-chip{flex:0 0 auto;display:flex;align-items:center;gap:9px;padding:12px 22px;border:1px solid #e6e5df;border-radius:999px;background:#fff;color:#1d1d1d;font-size:16px;font-weight:600;white-space:nowrap;box-shadow:0 3px 10px #00000009;transition:background .15s,color .15s}
+.vz-chip:hover{border-color:#cfd8d2}
+.vz-chip.active{background:linear-gradient(180deg,var(--vz-shop-green-2),var(--vz-shop-green));border-color:var(--vz-shop-green);color:#fff;box-shadow:0 6px 14px #0b6b3933}
+.vz-chip-offer{background:#eef7f0;border-color:#d7e9dc;color:#c41a2f}
+.vz-chip-offer.active{color:#fff}
+.vz-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:22px}
+.vz-empty-search{text-align:center;color:#666}
+
+/* --------------------------------------------------------- product card */
+.vz-shop .card.vz-card{position:relative;display:flex;flex-direction:column;padding:12px 12px 14px;border:1px solid #eeede8;border-radius:22px;background:#fff;box-shadow:0 6px 20px #0000000d;text-align:center;overflow:visible}
+.vz-shop .vz-card .picture{margin:0 0 8px;border-radius:16px;background:#fff}
+.vz-card-badge{position:absolute;z-index:3;top:12px;left:12px;padding:4px 12px;border-radius:999px;background:linear-gradient(180deg,#e2152f,#b4001b);color:#fff;font-size:16px;font-weight:800;line-height:1.35;box-shadow:0 3px 8px #b4001b40}
+.vz-card-soldout{background:#2b2b2b;box-shadow:none}
+.vz-card-fav{position:absolute;z-index:3;top:10px;right:10px;display:grid;place-items:center;width:42px;height:42px;border-radius:50%;background:#fff;color:#151515;box-shadow:0 3px 10px #00000017}
+.vz-card-fav.selected{color:#d40a27}
+.vz-card-name{display:grid;justify-items:center;gap:4px;padding:0;border:0;background:none;color:inherit;cursor:pointer}
+.vz-card-name h3{margin:0;color:#111;font-size:18px;font-weight:800;line-height:1.25}
+.vz-card-name span{color:#5f5f5f;font-size:14px}
+.vz-card-price{display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:4px 10px;margin:12px 0 14px}
+.vz-card-price strong{color:#0b7a3d;font-size:24px;font-weight:800;line-height:1.1;white-space:nowrap}
+.vz-card-price del{color:#999;font-size:14px;white-space:nowrap}
+.vz-card-saving{padding:4px 10px;border-radius:999px;background:#fde8eb;color:#c8102e;font-size:12.5px;font-weight:800;white-space:nowrap}
+.vz-card-buy{display:flex;align-items:center;justify-content:center;gap:9px;width:100%;min-height:50px;margin-top:auto;border:0;border-radius:999px;background:linear-gradient(180deg,var(--vz-shop-green-2),var(--vz-shop-green));color:#fff;font-size:17px;font-weight:800;box-shadow:0 7px 16px #0b6b3933;transition:filter .15s}
+.vz-card-buy:hover:not(:disabled){filter:brightness(1.08)}
+.vz-card-buy:disabled{background:#c3cbc6;box-shadow:none;cursor:not-allowed}
+
+/* ------------------------------------------------------- phone bottom bar */
+.mobile-nav.vz-bottom-nav{direction:inherit;background:#fff;color:#1d1d1d;border-top:1px solid #ecebe6;box-shadow:0 -6px 20px #0000000f}
+.mobile-nav.vz-bottom-nav{justify-content:stretch;gap:0}
+.mobile-nav.vz-bottom-nav>a,.mobile-nav.vz-bottom-nav>button{position:relative;flex:1 1 0;min-width:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;padding:0;border:0;background:none;color:#1d1d1d;font:inherit}
+.vz-bottom-nav small{font-size:12.5px;font-weight:600;white-space:nowrap}
+.vz-bottom-nav .active{color:var(--vz-shop-green)}
+.vz-bottom-nav .active::after{content:'';position:absolute;bottom:-5px;width:68%;height:3px;border-radius:3px;background:var(--vz-shop-green)}
+.vz-bottom-nav span{position:relative;display:grid}
+.vz-bottom-nav b{position:absolute;top:-7px;right:-11px;min-width:18px;height:18px;padding:0 4px;border-radius:9px;background:var(--vz-shop-green);color:#fff;font-size:11px;font-weight:800;line-height:18px;text-align:center}
+.vz-nav-wa svg{width:25px;height:25px;color:#1fa855}
+
+/* ------------------------------------------------------------ responsive */
+@media(max-width:1100px){.vz-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:900px){
+  /* Sides take their own width, the logo is centred in the space left: nothing overlaps. */
+  .main-header.vz-header{grid-template-columns:auto minmax(0,1fr) auto;height:68px;padding:0 10px;gap:10px}
+  .main-header.vz-header .header-pages{display:none}
+  .main-header.vz-header>.logo{font-size:23px}
+  .vz-icon-btn{width:38px;height:38px}
+  .vz-lang{gap:5px}
+  .vz-lang button{font-size:13.5px}
+  .vz-header-side{gap:6px}
+}
+@media(max-width:700px){
+  .vz-promo.vz-promo-shop{gap:10px;padding:9px 10px}
+  .vz-promo-shop .vz-promo-offer{font-size:15px}
+  .vz-promo-delivery{font-size:10.5px;gap:5px}
+  .vz-promo-delivery svg{width:15px;height:15px;flex-shrink:0}
+  .vz-promo-shop .vz-promo-timer{padding-inline-start:10px;gap:4px}
+  .vz-promo-shop .vz-promo-timer>div{min-width:40px;padding:3px 4px}
+  .vz-promo-shop .vz-promo-timer b{font-size:16px}
+  .vz-promo-shop .vz-promo-timer small{font-size:9px}
+  .vz-shop{padding:12px 12px 28px}
+  .vz-chips{gap:8px;margin-inline:-12px;padding:2px 12px 14px}
+  .vz-chip{padding:9px 15px;font-size:14px;gap:7px}
+  .vz-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+  .vz-shop .card.vz-card{padding:8px 8px 10px;border-radius:18px}
+  .vz-card-badge{top:8px;left:8px;font-size:13px;padding:3px 9px}
+  .vz-card-fav{top:6px;right:6px;width:34px;height:34px}
+  .vz-card-fav svg{width:18px;height:18px}
+  .vz-card-name h3{font-size:14.5px}
+  .vz-card-name span{font-size:12.5px}
+  .vz-card-price{gap:3px 6px;margin:8px 0 10px}
+  .vz-card-price strong{font-size:18px}
+  .vz-card-price del{font-size:11.5px}
+  .vz-card-saving{padding:3px 7px;font-size:10.5px}
+  .vz-card-buy{min-height:42px;font-size:14px;gap:6px}
+  .vz-card-buy svg{width:18px;height:18px}
+}
+@media(max-width:600px){
+  .whatsapp-float.vz-float-shop{display:none}
+  .mobile-nav.vz-bottom-nav{height:calc(70px + env(safe-area-inset-bottom));padding:6px 2px calc(6px + env(safe-area-inset-bottom))}
+  body{padding-bottom:calc(70px + env(safe-area-inset-bottom))}
+}
+@media(max-width:380px){
+  .vz-lang button{font-size:12.5px}
+  .main-header.vz-header>.logo{font-size:21px}
+  .vz-icon-btn{width:34px;height:34px}
+  .vz-card-price strong{font-size:16px}
+  .vz-card-saving{display:none}
+}

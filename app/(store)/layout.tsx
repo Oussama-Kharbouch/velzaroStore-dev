@@ -1,5 +1,6 @@
 import "./globals.css";
 import "./product-conversion.css";
+import "./shop-design.css";
 import MetaPixel from "../../components/meta-pixel";
 import { shopLang } from "../../lib/shop-lang";
 

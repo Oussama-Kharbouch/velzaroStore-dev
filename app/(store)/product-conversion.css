@@ -154,13 +154,6 @@ html[dir=rtl] .vz-chevron{transform:scaleX(-1)}
   .vz-promo-timer{gap:5px;margin-top:4px}
   .vz-promo-timer>div{min-width:48px}
   .vz-promo-timer b{font-size:17px}
-  /* Compact white header: logo, search, language, cart and menu; the bottom bar is left to the buy button. */
-  .main-header.product-header{height:58px;padding:0 12px;gap:8px}
-  .main-header.product-header .logo{font-size:22px;letter-spacing:3px}
-  .product-header .header-actions{gap:8px}
-  .product-header .language-control{display:flex;font-size:10px;gap:4px}
-  .product-header .language-switch{width:36px;height:21px}
-  .product-header .desktop-menu{display:grid;place-items:center}
   .vz-pdp.prestige-detail{padding:10px 0 24px}
   .vz-pdp .vz-breadcrumb{display:none}
   .vz-pdp .vz-main-photo{margin:0 12px;border-radius:16px}
@@ -194,8 +187,6 @@ html[dir=rtl] .vz-chevron{transform:scaleX(-1)}
 }
 @media(max-width:360px){
   .vz-promo-timer>div{min-width:44px}
-  .main-header.product-header .logo{font-size:19px;letter-spacing:2px}
-  .product-header .header-actions{gap:5px}
   .vz-sticky-buy button{font-size:16px;gap:9px}
   .vz-trust b{font-size:10.5px}
 }

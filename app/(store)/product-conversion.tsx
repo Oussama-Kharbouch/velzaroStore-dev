@@ -1,6 +1,6 @@
 'use client';
 /* eslint-disable @next/next/no-img-element -- catalogue photos (R2) are served as they are. */
-import { useEffect, useRef, useState, type ReactNode } from 'react';
+import { useEffect, useRef, useState, type ReactNode, type SVGProps } from 'react';
 import { BadgeCheck, Banknote, ChevronLeft, ChevronRight, HelpCircle, Plus, Truck, X } from 'lucide-react';
 import WhatsappIcon from '../../components/whatsapp-icon';
 import type { PromoCampaign } from '../../lib/promo';
@@ -25,7 +25,11 @@ const EXCHANGE_DAYS = 7;
  * Red bar above the header of the product pages. With a running campaign (lib/promo.ts): the offer
  * and its countdown, identical for every visitor; otherwise only free delivery and cash on delivery.
  */
-export function PromoBar({ lang, promo }: { lang: Lang; promo: PromoCampaign | null }) {
+/**
+ * variant "product": offer and countdown (product pages); "shop": offer, delivery line and countdown side
+ * by side (home page and shop sections).
+ */
+export function PromoBar({ lang, promo, variant = 'product' }: { lang: Lang; promo: PromoCampaign | null; variant?: 'product' | 'shop' }) {
   const [now, setNow] = useState(() => Date.now());
   useEffect(() => {
     if (!promo) return;
@@ -41,16 +45,27 @@ export function PromoBar({ lang, promo }: { lang: Lang; promo: PromoCampaign | n
   const units = lang === 'ar' ? ['ساعة', 'دقيقة', 'ثانية'] : ['heures', 'min', 'sec'];
   // Without a running campaign there is nothing to announce: no bar at all.
   if (!active) return null;
-  return <div className="vz-promo" dir={lang === 'ar' ? 'rtl' : 'ltr'} role="region" aria-label={pick(lang, 'العرض الحالي', 'Offre en cours')}>
-    <strong className="vz-promo-offer">{hours
+  const offer = <strong className="vz-promo-offer">{hours
       ? pick(lang, `🔥 عرض خاص لمدة ${hours} ساعة فقط`, `🔥 Offre spéciale de ${hours} h seulement`)
-      : pick(lang, '🔥 عرض خاص لفترة محدودة', '🔥 Offre spéciale à durée limitée')}</strong>
+      : pick(lang, '🔥 عرض خاص لفترة محدودة', '🔥 Offre spéciale à durée limitée')}</strong>;
+  return <div className={'vz-promo' + (variant === 'shop' ? ' vz-promo-shop' : '')} dir={lang === 'ar' ? 'rtl' : 'ltr'} role="region" aria-label={pick(lang, 'العرض الحالي', 'Offre en cours')}>
+    {variant === 'shop'
+      ? <div className="vz-promo-copy">{offer}<span className="vz-promo-delivery"><Truck size={18} aria-hidden="true"/>{pick(lang, 'التوصيل مجاني لجميع أنحاء المغرب + الدفع عند الاستلام', 'Livraison gratuite partout au Maroc + paiement à la livraison')}</span></div>
+      : offer}
     <div className="vz-promo-timer" dir="ltr" role="timer" aria-label={pick(lang, 'الوقت المتبقي للعرض', 'Temps restant avant la fin de l’offre')}>
       {[Math.floor(left / 3600), Math.floor((left % 3600) / 60), left % 60].map((value, i) => <div key={i}>
         <b suppressHydrationWarning>{String(value).padStart(2, '0')}</b><small>{units[i]}</small>
       </div>)}
     </div>
   </div>;
+}
+
+/** Sneaker outline (shop category buttons), drawn like the lucide icons. */
+export function SneakerIcon({ size = 20, ...rest }: { size?: number } & SVGProps<SVGSVGElement>) {
+  return <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={1.8} strokeLinecap="round" strokeLinejoin="round" {...rest}>
+    <path d="M2.5 17.5v-4.2c0-.6.5-1 1-1h2.3l2.4-3.4c.3-.4.9-.5 1.3-.2l1.7 1.3 1.5-1.1 1.7 1.8c1.5 1.6 3.4 2.4 5.6 2.8 1 .2 1.6 1 1.6 2v2z"/>
+    <path d="M2.5 17.5h19M8.6 11.6l1.4 1M10.8 10.4l1.2 1"/>
+  </svg>;
 }
 
 /* ------------------------------------------------------------ trust badges */

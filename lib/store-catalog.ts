@@ -25,6 +25,8 @@ export type StoreProduct = {
   color: string;
   category: string;
   promotion: boolean;
+  /** Gender chosen in the dashboard (homme, femme, unisexe); null = not classified (shown to everyone). */
+  gender: string | null;
   price: number;
   oldPrice: number | null;
   sizes: { size: number; available: boolean }[];
@@ -38,7 +40,7 @@ export type StoreProduct = {
 
 /** Catalogue intégré au code, utilisé si la base ne répond pas : la boutique reste en ligne. */
 const fallbackCatalog = (): StoreProduct[] => staticProducts.map((p) => ({
-  ...p, model: PRODUCT.name, modelSlug: PRODUCT.slug, brand: null, nameAr: null, price: PRICE, oldPrice: OLD_PRICE, sizes: SIZES.map((size) => ({ size, available: true })),
+  ...p, model: PRODUCT.name, modelSlug: PRODUCT.slug, brand: null, nameAr: null, gender: null, price: PRICE, oldPrice: OLD_PRICE, sizes: SIZES.map((size) => ({ size, available: true })),
   photos: photoKeys[p.id].map((key, i) => siteImageUrl({ key, legacy: legacyPhotoPaths[p.id][i] })),
   photoKeys: photoKeys[p.id],
   thumbnail: siteImageUrl({ key: photoKeys[p.id][0], legacy: legacyPhotoPaths[p.id][0] }),
@@ -86,7 +88,7 @@ export async function getStoreCatalog(): Promise<StoreProduct[]> {
     const rows = await db.select({
       model: products.name, modelSlug: products.slug, brand: products.brand,
       id: variants.id, slug: variants.slug, name: variants.colorName, nameAr: variants.colorNameAr, color: variants.colorHex,
-      price: variants.price, oldPrice: variants.oldPrice, thumbnail: variants.thumbnail,
+      price: variants.price, oldPrice: variants.oldPrice, thumbnail: variants.thumbnail, gender: variants.gender,
     }).from(variants).innerJoin(products, eq(variants.productId, products.id))
       .where(and(eq(variants.active, true), eq(products.active, true)))
       .orderBy(asc(variants.position), asc(variants.id));
@@ -110,6 +112,7 @@ export async function getStoreCatalog(): Promise<StoreProduct[]> {
       color: r.color,
       category: extra.get(r.slug)?.category ?? "mixte",
       promotion: extra.get(r.slug)?.promotion ?? false,
+      gender: r.gender,
       price: r.price,
       oldPrice: r.oldPrice !== null && r.oldPrice > r.price ? r.oldPrice : null,
       sizes: sizes.filter((s) => s.variantId === r.id).map((s) => ({ size: s.size, available: s.stock === null || s.stock > 0 })),
