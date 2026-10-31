@@ -114,3 +114,25 @@
  .vz-selling-points{margin-top:10px!important}
 }
 @media(max-width:450px){.vz-top-trust span{font-size:10px}.vz-promo-top{gap:7px;padding:8px}.vz-promo-timer>div{min-width:38px;padding:3px 5px}.prestige-detail .gallery-viewport,.prestige-detail .gallery-track,.prestige-detail .gallery-track .gallery.original-photos{height:300px!important}}
+
+/* Final requested layout: countdown under the red offer, sizes after colours. */
+.vz-promo-top{display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:center!important;gap:7px!important;padding:10px 12px!important}
+.vz-promo-copy{display:flex!important;flex-direction:column!important;align-items:center!important;gap:3px!important}
+.vz-promo-timer{width:auto;display:flex;justify-content:center;gap:7px;margin-top:1px}
+.vz-promo-timer>div{min-width:49px;padding:5px 8px;background:#fff;color:#c10026}
+.vz-inline-sizes{padding:12px 0 8px;scroll-margin-top:110px}
+.vz-size-heading{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:10px}
+.vz-size-heading strong{font-size:15px;font-weight:800}
+.vz-size-heading span{font-size:11px;color:#667168}
+.vz-size-choices{display:flex;gap:7px;flex-wrap:wrap}
+.vz-size-choices button{flex:1 1 45px;max-width:74px;min-width:42px;min-height:47px;border:1px solid #dce2dd;background:#fff;border-radius:10px;font-weight:700;font-size:15px;transition:background .15s,border-color .15s}
+.vz-size-choices button[aria-pressed=true]{background:#008b45;border-color:#008b45;color:#fff}
+.vz-size-choices button:disabled{color:#9b9b9b;background:#f5f5f5;opacity:.45;text-decoration:line-through;cursor:not-allowed}
+.vz-size-choices button:focus-visible{outline:2px solid #008b45;outline-offset:2px}
+.vz-size-error{font-size:12px;font-weight:700;color:#bd1831;margin:9px 0 0}
+@media(max-width:450px){
+  .vz-promo-top{gap:5px!important;padding:8px 10px!important}
+  .vz-promo-timer>div{min-width:45px;padding:4px 7px}
+  .vz-size-choices{gap:6px}
+  .vz-size-choices button{min-width:40px;min-height:44px}
+}
