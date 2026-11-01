@@ -29,7 +29,7 @@ const SECTIONS=['boutique','femme','homme','promotions','favoris'];
 const sectionPath=(page:string)=>page==='home'?'/':'/'+page;
 // Pixel content_ids = ids of the Meta catalogue feed (app/feed/meta.csv), once per colourway.
 const catalogIds=(items:{id:string}[])=>[...new Set(items.map(i=>catalogId(i.id)))];
-export default function Store({ catalog, media, promo = null, initialProductId, initialPage, initialLang }: { catalog: StoreProduct[]; media: { hero: string; categories: Record<string, string> }; promo?: PromoCampaign | null; initialProductId?: string; initialPage?: string; initialLang?: 'fr' | 'ar' }) {
+export default function Store({ catalog, media, promo = null, initialProductId, initialPage, initialLang }: { catalog: StoreProduct[]; media: { hero: string; categories: Record<string, string>; categoryPhotos: Record<string, string> }; promo?: PromoCampaign | null; initialProductId?: string; initialPage?: string; initialLang?: 'fr' | 'ar' }) {
     // Coloris en ligne, prix et pointures disponibles : lus dans la base par page.tsx.
     const products=catalog;
     const byId=(id:string)=>products.find(p=>p.id===id);
@@ -144,9 +144,9 @@ export default function Store({ catalog, media, promo = null, initialProductId, 
     // Home page: the newest colourways (creation order of the dashboard), three category tiles.
     const newest=[...products].sort((a,b)=>b.added-a.added).slice(0,8);
     const homeTiles:CategoryTile[]=[
-      {id:'homme',label:lang==='ar'?'رجال':'Homme',tone:'grey'},
-      {id:'femme',label:lang==='ar'?'نساء':'Femme',tone:'pink'},
-      {id:'promotions',label:lang==='ar'?'عروض':'Offres',tone:'pink'},
+      {id:'homme',label:lang==='ar'?'رجال':'Homme',tone:'grey',image:media.categoryPhotos.homme},
+      {id:'femme',label:lang==='ar'?'نساء':'Femme',tone:'pink',image:media.categoryPhotos.femme},
+      {id:'promotions',label:lang==='ar'?'عروض':'Offres',tone:'red'},
     ];
     const money=(value:number)=>value.toLocaleString('fr-FR')+' '+(lang==='ar'?'درهم':'DH');
     const titleOf=(p:typeof products[0])=>productContent(p.modelSlug).title?.[lang]??p.model;

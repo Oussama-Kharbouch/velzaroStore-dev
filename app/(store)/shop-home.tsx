@@ -94,16 +94,40 @@ const OfferIcon = () => <svg viewBox="0 0 64 64" aria-hidden="true">
 </svg>;
 const tileIcons = { homme: ManIcon, femme: WomanIcon, promotions: OfferIcon };
 
-export type CategoryTile = { id: keyof typeof tileIcons; label: string; tone: string };
+export type CategoryTile = { id: keyof typeof tileIcons; label: string; tone: string; image?: string };
 
-/** Three category tiles (men, women, offers) with a pictogram each. */
+/* Red gift box with its ribbon and a "%" tag: picture of the offers tile (drawn, sharp at every size). */
+const GiftArt = () => <svg className="vz-tile-gift" viewBox="0 0 160 140" aria-hidden="true">
+  <defs>
+    <linearGradient id="vz-gift-box" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stopColor="#ffffff"/><stop offset="1" stopColor="#e9e4e4"/></linearGradient>
+    <linearGradient id="vz-gift-ribbon" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stopColor="#ff3048"/><stop offset="1" stopColor="#b8001a"/></linearGradient>
+  </defs>
+  <ellipse cx="74" cy="128" rx="58" ry="8" fill="#5a0010" opacity=".35"/>
+  <rect x="26" y="60" width="96" height="66" rx="5" fill="url(#vz-gift-box)"/>
+  <rect x="18" y="44" width="112" height="22" rx="5" fill="#fff"/>
+  <rect x="64" y="44" width="20" height="82" fill="url(#vz-gift-ribbon)"/>
+  <path d="M74 44c-6-16-30-26-36-12-5 11 16 14 36 12Z" fill="url(#vz-gift-ribbon)"/>
+  <path d="M74 44c6-16 30-26 36-12 5 11-16 14-36 12Z" fill="url(#vz-gift-ribbon)"/>
+  <circle cx="74" cy="44" r="6" fill="#c4001b"/>
+  <g transform="rotate(-18 128 92)">
+    <path d="M112 74h26a6 6 0 0 1 6 6v26a6 6 0 0 1-6 6h-26l-12-19Z" fill="#fff"/>
+    <circle cx="108" cy="93" r="3" fill="#e50924"/>
+    <text x="126" y="101" textAnchor="middle" fontSize="22" fontWeight="800" fill="#e50924" fontFamily="Arial, sans-serif">%</text>
+  </g>
+</svg>;
+
+/**
+ * Three category tiles of the home page: photo (men, women) or the drawn gift (offers), name at the
+ * top and an arrow at the bottom. Without a photo, the tile shows its pictogram.
+ */
 export function CategoryTiles({ lang, tiles }: { lang: Lang; tiles: CategoryTile[] }) {
   const Chevron = lang === 'ar' ? ChevronLeft : ChevronRight;
   return <nav className="vz-tiles" dir={lang === 'ar' ? 'rtl' : 'ltr'} aria-label={pick(lang, 'الفئات', 'Catégories')}>
     {tiles.map((tile) => {
       const Icon = tileIcons[tile.id];
-      return <a key={tile.id} href={'/' + tile.id} className={'vz-tile tone-' + tile.tone}>
-        <span className="vz-tile-icon"><Icon/></span>
+      const art = tile.id === 'promotions' ? 'gift' : tile.image ? 'photo' : 'icon';
+      return <a key={tile.id} href={'/' + tile.id} className={'vz-tile tone-' + tile.tone + ' vz-tile-' + art + ' vz-tile-' + tile.id}>
+        {art === 'photo' ? <img className="vz-tile-photo" src={tile.image} alt="" loading="lazy"/> : art === 'gift' ? <GiftArt/> : <span className="vz-tile-icon"><Icon/></span>}
         <b>{tile.label}</b>
         <span className="vz-tile-go" aria-hidden="true"><Chevron size={18}/></span>
       </a>;

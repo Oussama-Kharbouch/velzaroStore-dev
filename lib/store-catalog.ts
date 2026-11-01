@@ -144,4 +144,5 @@ export async function getStoreCatalog(): Promise<StoreProduct[]> {
 export const getStoreMedia = () => ({
   hero: siteImageUrl(siteImages.hero),
   categories: Object.fromEntries(Object.entries(siteImages.categories).map(([id, image]) => [id, siteImageUrl(image)])),
+  categoryPhotos: Object.fromEntries(Object.entries(siteImages.categoryPhotos).map(([id, image]) => [id, siteImageUrl(image)])),
 });
