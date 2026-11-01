@@ -335,3 +335,12 @@ html[dir=rtl] .vz-hero-stripe{transform:skewX(18deg)}
   .vz-hero h1{font-size:29px}
   .vz-hero-perks{gap:18px}
 }
+
+/* =============================================== logo and desktop menu */
+/* Black logo (gold stroke kept). */
+:root body .logo.logo{color:#111}
+/* Accueil / Boutique / Offres: a single 2px line under the selected page only. */
+.main-header.vz-header .header-pages{border:0}
+.main-header.vz-header .header-pages a{border:0;padding:10px 2px}
+.main-header.vz-header .header-pages a::after{content:none}
+.main-header.vz-header .header-pages a.active::after{content:'';position:absolute;left:0;right:0;bottom:2px;height:2px;border-radius:2px;background:#111}
