@@ -3,7 +3,7 @@
  * WhatsApp screenshots, FAQ and the fixed buy bar. Mobile first; every class starts with vz-
  * so the rest of the shop is untouched.
  */
-:root{--vz-green:#008a43;--vz-green-dark:#00743a;--vz-red:#d40a27;--vz-ink:#111;--vz-photo:#f3f4f4;--vz-line:#e2e6e4;--vz-muted:#5c625f}
+:root{--vz-green:#008a43;--vz-green-dark:#00743a;--vz-red:#d40a27;--vz-ink:#111;--vz-photo:#f2f2f2;--vz-line:#e3e3e3;--vz-muted:#5f5f5f;--vz-pink:#fff0f2}
 
 /* ------------------------------------------------- offer band (Cloudtilt) */
 /* Black band: stopwatch, red time boxes, "ends in", slanted red "limited offer" block on the left. */
@@ -14,7 +14,7 @@
 .vz-flash-unit{display:flex;align-items:flex-start}
 .vz-flash-unit i{width:14px;color:#fff;font-size:20px;font-style:normal;font-weight:800;line-height:34px;text-align:center}
 .vz-flash-unit span{display:grid;justify-items:center;gap:2px}
-.vz-flash-unit b{display:grid;place-items:center;min-width:42px;height:34px;padding:0 4px;border-radius:7px;background:#e50924;color:#fff;font-size:21px;font-weight:800;line-height:1;font-variant-numeric:tabular-nums}
+.vz-flash-unit b{display:grid;place-items:center;min-width:42px;height:34px;padding:0 4px;border-radius:7px;background:var(--vz-red);color:#fff;font-size:21px;font-weight:800;line-height:1;font-variant-numeric:tabular-nums}
 .vz-flash-unit small{color:#e6e6e6;font-size:10.5px;font-weight:600;line-height:1}
 .vz-flash-ends{flex-shrink:0;margin:0 14px;font-size:15px;font-weight:700;white-space:nowrap}
 .vz-flash-offer{align-self:stretch;display:flex;align-items:center;gap:8px;margin-right:auto;padding:0 30px 0 18px;background:linear-gradient(100deg,#c4001b,#e50924 60%);color:#fff;font-size:20px;font-weight:800;white-space:nowrap;clip-path:polygon(0 0,100% 0,calc(100% - 18px) 100%,0 100%)}
@@ -86,7 +86,6 @@
 .vz-colours button small{position:absolute;inset:auto 4px 3px;font-size:9.5px;font-weight:700;color:var(--vz-red);background:#ffffffd9;border-radius:6px;line-height:1.5}
 .vz-size-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(56px,1fr));gap:8px}
 .vz-size-grid button{min-height:48px;border:1.5px solid #d4d9d6;border-radius:11px;background:#fff;color:var(--vz-ink);font-size:16px;font-weight:700;transition:background .15s,border-color .15s,color .15s}
-.vz-size-grid button:hover:not(:disabled){border-color:var(--vz-green)}
 .vz-size-grid button[aria-pressed=true]{background:var(--vz-green);border-color:var(--vz-green);color:#fff}
 .vz-size-grid button:disabled{background:#f5f5f5;color:#b4b4b4;text-decoration:line-through;cursor:not-allowed}
 .vz-size-grid button:focus-visible,.vz-colours button:focus-visible,.vz-thumbs button:focus-visible{outline:2px solid var(--vz-green);outline-offset:2px}
@@ -100,7 +99,6 @@
 .vz-buy-price{padding-inline-start:12px;border-inline-start:1px solid #ffffff73;font-weight:700}
 html[dir=rtl] .vz-chevron{transform:scaleX(-1)}
 .vz-add-cart{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;min-height:46px;margin-top:9px;border:1.5px solid #cfd6d2;border-radius:13px;background:#fff;color:#222;font-size:14px;font-weight:700}
-.vz-add-cart:hover:not(:disabled){border-color:var(--vz-green);color:var(--vz-green)}
 .vz-add-cart:disabled{color:#fff}
 .vz-trust{list-style:none;margin:16px 0 0;padding:0;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
 .vz-trust li{display:flex;flex-direction:column;align-items:center;gap:6px;padding:11px 6px;border-radius:13px;background:#edf8f1;color:var(--vz-green);text-align:center}
@@ -211,3 +209,145 @@ html[dir=rtl] .vz-chevron{transform:scaleX(-1)}
   .vz-sizes.vz-attention{animation:none}
   .vz-comfort-photo img,.vz-photo-arrow,.vz-buy{transition:none}
 }
+
+/* =========================================== product page V5 (red and black) */
+/* Gallery: grey rounded photo, thumbnails filling the row (scroll beyond six), red frame on the chosen one. */
+.vz-pdp .vz-main-photo{background:var(--vz-photo);border-radius:22px}
+.vz-thumbs button{flex:1 0 0;min-width:64px;max-width:132px;height:84px;border:2px solid transparent;border-radius:12px;background:var(--vz-photo)}
+.vz-thumbs button[aria-pressed=true]{border-color:var(--vz-red)}
+.vz-discount{background:var(--vz-red);font-size:17px;padding:6px 15px}
+
+/* Name, price in red, saving pill with its tag. */
+.vz-pdp .vz-brand{color:#9a6b1f;font-size:13px;font-weight:800;letter-spacing:.06em}
+.vz-pdp .vz-title{font-size:clamp(26px,2.9vw,38px)}
+.vz-price-row{gap:6px 16px;margin:16px 0 6px}
+.vz-pdp .vz-price{color:var(--vz-red);font-size:34px}
+.vz-pdp .vz-old-price{font-size:19px}
+.vz-pdp .vz-saving{display:inline-flex;align-items:center;gap:7px;padding:7px 16px;background:#fde8eb;color:var(--vz-red);font-size:15px}
+
+/* Colour and size: titles with a red pictogram, red frame on the choice. */
+.vz-block-head h2{display:flex;align-items:center;gap:8px;font-size:17px}
+.vz-block-head h2 svg{flex-shrink:0;color:var(--vz-red)}
+.vz-colours{gap:12px}
+.vz-colours button{flex:0 0 96px;height:62px;border:2px solid transparent;background:var(--vz-photo)}
+.vz-colours button.chosen{border-color:var(--vz-red)}
+.vz-size-grid{grid-template-columns:repeat(auto-fill,minmax(70px,1fr));gap:12px}
+.vz-size-grid button{min-height:44px;border:1.5px solid #dcdcdc;border-radius:10px;font-size:17px;font-weight:600}
+@media(hover:hover){.vz-size-grid button:hover:not(:disabled):not([aria-pressed=true]){border-color:var(--vz-ink)}}
+.vz-size-grid button[aria-pressed=true]{border-color:var(--vz-red);background:var(--vz-pink);color:var(--vz-red);font-weight:800}
+.vz-size-grid button:focus-visible,.vz-colours button:focus-visible,.vz-thumbs button:focus-visible{outline-color:var(--vz-red)}
+
+/* Buy now (red) and add to cart (white) side by side. */
+.vz-actions{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:22px}
+.vz-actions .vz-buy,.vz-actions .vz-add-cart{display:flex;align-items:center;justify-content:center;gap:10px;min-width:0;min-height:58px;margin:0;border-radius:12px;font-size:19px;font-weight:800;white-space:nowrap}
+.vz-actions .vz-buy{border:0;background:linear-gradient(180deg,#f0102e,var(--vz-red-2));color:#fff;box-shadow:0 10px 22px #e5092440}
+.vz-actions .vz-buy:hover:not(:disabled){background:linear-gradient(180deg,#f0102e,var(--vz-red-2));filter:brightness(1.07)}
+.vz-actions .vz-add-cart{border:1.5px solid #f0b6bf;background:#fff;color:var(--vz-ink)}
+.vz-actions .vz-add-cart:hover:not(:disabled){border-color:var(--vz-red);color:var(--vz-ink)}
+.vz-actions .vz-buy:disabled,.vz-actions .vz-add-cart:disabled{border-color:#c9c9c9;background:#c9c9c9;color:#fff;box-shadow:none;filter:none}
+
+/* Four pink reassurance tiles. */
+.vz-trust{grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-top:20px}
+.vz-trust li{gap:6px;padding:14px 6px;border-radius:14px;background:var(--vz-pink);color:var(--vz-red)}
+.vz-trust b{color:var(--vz-ink);font-size:15px}
+.vz-trust small{color:#555;font-size:13px}
+
+/* Lower sections: centred titles between two red lines. */
+.vz-center-title{display:flex;align-items:center;justify-content:center;gap:16px;text-align:center}
+.vz-center-title::before,.vz-center-title::after{content:'';flex:0 0 64px;height:2px;background:var(--vz-red)}
+.vz-center-title>span{display:inline-flex;align-items:center;gap:10px}
+.vz-section .vz-center-title{margin-bottom:18px}
+.vz-center-sub{margin:-10px 0 16px;color:#666;font-size:15px;text-align:center}
+.vz-reviews{padding-top:22px;padding-bottom:20px;border:1px solid #f6cdd4;border-radius:22px;background:#fff7f8}
+.vz-reviews .vz-wa-badge{flex-basis:40px;width:40px;height:40px}
+.vz-comfort article{border:0;border-radius:16px;background:#f6f6f6}
+.vz-comfort-copy h3{font-size:17px}
+.vz-comfort-copy p{font-size:14px}
+
+/* FAQ: short rows with an arrow. */
+.vz-faq-title{display:flex;align-items:center;justify-content:center;gap:8px;text-align:center}
+.vz-faq-title svg{flex-shrink:0;color:var(--vz-red)}
+.vz-faq-list{gap:8px;margin:0 auto;max-width:760px}
+.vz-faq details{border:1px solid #e3e3e3;border-radius:8px}
+.vz-faq details[open]{border-color:#f0b6bf}
+.vz-faq summary{padding:11px 14px;font-size:15px}
+.vz-faq summary svg{color:var(--vz-ink)}
+.vz-faq details[open] summary svg{transform:rotate(180deg)}
+.vz-faq details a{color:var(--vz-red)}
+
+/* You may also like: small cards in a row that scrolls sideways. */
+.vz-related-title{display:flex;align-items:center;justify-content:center;gap:8px;text-align:center}
+.vz-related-title svg{flex-shrink:0;color:var(--vz-red)}
+.vz-related-carousel{position:relative}
+.vz-related-track{display:grid;grid-auto-flow:column;grid-auto-columns:calc((100% - 36px) / 4);gap:12px;overflow-x:auto;padding:4px 2px 10px;scroll-snap-type:x mandatory;scrollbar-width:none}
+.vz-related-track::-webkit-scrollbar{display:none}
+.vz-related-card{position:relative;min-width:0;border:1px solid var(--vz-line);border-radius:16px;background:#fff;box-shadow:0 4px 14px #0000000a;scroll-snap-align:start}
+.vz-related-badge{position:absolute;z-index:2;top:10px;left:10px;padding:3px 9px;border-radius:999px;background:var(--vz-red);color:#fff;font-size:13px;font-weight:800}
+.vz-related-fav{position:absolute;z-index:2;top:8px;right:8px;display:grid;place-items:center;width:34px;height:34px;padding:0;border:0;border-radius:50%;background:#fff;color:var(--vz-ink);box-shadow:0 2px 8px #0000001a}
+.vz-related-fav[aria-pressed=true]{color:var(--vz-red)}
+.vz-related-open{display:grid;justify-items:center;gap:3px;width:100%;padding:12px 10px 14px;border:0;background:none;color:inherit;text-align:center}
+.vz-related-photo{display:block;width:100%;aspect-ratio:4/3;margin-bottom:6px}
+.vz-related-photo img{width:100%;height:100%;object-fit:contain}
+.vz-related-open b{max-width:100%;overflow:hidden;color:var(--vz-ink);font-size:15px;white-space:nowrap;text-overflow:ellipsis}
+.vz-related-open small{max-width:100%;overflow:hidden;color:#666;font-size:12.5px;white-space:nowrap;text-overflow:ellipsis}
+.vz-related-price{display:flex;align-items:baseline;justify-content:center;flex-wrap:wrap;gap:2px 8px}
+.vz-related-price strong{color:var(--vz-red);font-size:18px;font-weight:800;white-space:nowrap}
+.vz-related-price del{color:#999;font-size:13px;white-space:nowrap}
+
+/* Fixed buy bar (phones and tablets): red button, separator, saving, price. */
+@media(max-width:900px){
+  .vz-sticky-buy{display:flex;align-items:center;gap:12px;padding:10px 14px calc(10px + env(safe-area-inset-bottom))}
+  .vz-sticky-buy button{flex:1 1 auto;width:auto;gap:10px;min-height:54px;border-radius:12px;background:linear-gradient(180deg,#f0102e,var(--vz-red-2));box-shadow:0 8px 18px #e5092438;font-size:19px}
+  .vz-sticky-buy button:disabled{background:#c9c9c9;box-shadow:none}
+  .vz-sticky-sep{flex-shrink:0;width:1px;height:34px;background:#d9d9d9}
+  .vz-sticky-saving{display:inline-flex;align-items:center;gap:5px;flex-shrink:0;padding:6px 11px;border-radius:999px;background:#fde8eb;color:var(--vz-red);font-size:13px;font-weight:800;white-space:nowrap}
+  .vz-sticky-price{flex-shrink:0;color:var(--vz-red);font-size:24px;font-weight:800;white-space:nowrap}
+}
+@media(max-width:768px){
+  .vz-pdp .vz-main-photo{border-radius:18px}
+  .vz-thumbs button{min-width:52px;height:60px;border-radius:10px}
+  .vz-discount{font-size:15px;padding:5px 12px}
+  .vz-pdp .vz-title{font-size:27px}
+  .vz-pdp .vz-price{font-size:30px}
+  .vz-pdp .vz-old-price{font-size:16px}
+  .vz-pdp .vz-saving{padding:6px 13px;font-size:13.5px}
+  .vz-colours{gap:9px}
+  .vz-colours button{flex-basis:80px;height:56px}
+  .vz-size-grid{grid-template-columns:repeat(5,minmax(0,1fr));gap:9px}
+  .vz-size-grid button{min-height:42px;font-size:16px}
+  .vz-actions{gap:10px;margin-top:18px}
+  .vz-actions .vz-buy,.vz-actions .vz-add-cart{min-height:52px;gap:8px;font-size:16.5px}
+  .vz-trust{grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}
+  .vz-trust li{padding:10px 3px;border-radius:12px}
+  .vz-trust svg{width:22px;height:22px}
+  .vz-trust b{font-size:12px}
+  .vz-trust small{font-size:10.5px}
+  .vz-center-title{gap:10px}
+  .vz-center-title::before,.vz-center-title::after{flex-basis:28px}
+  .vz-section .vz-center-title{font-size:19px}
+  .vz-center-sub{font-size:13px}
+  .vz-reviews{margin-inline:12px;padding:18px 10px 14px}
+  .vz-comfort-copy h3{font-size:15px}
+  .vz-comfort-copy p{font-size:12.5px}
+  .vz-faq-title{font-size:19px!important}
+  .vz-faq summary{padding:10px 12px;font-size:14px}
+  .vz-related-track{grid-auto-columns:calc((100% - 10px) / 2);gap:10px}
+  .vz-related-open b{font-size:13.5px}
+  .vz-related-price strong{font-size:16px}
+  .vz-sticky-buy{gap:9px;padding-inline:10px}
+  .vz-sticky-buy button{font-size:17px;min-height:50px}
+  .vz-sticky-price{font-size:21px}
+}
+@media(max-width:400px){
+  .vz-actions .vz-buy,.vz-actions .vz-add-cart{font-size:15px;gap:6px}
+  .vz-actions svg{width:18px;height:18px}
+  .vz-trust b{font-size:11px}
+  .vz-trust small{font-size:9.5px}
+  .vz-sticky-saving{display:none}
+  .vz-sticky-buy button{font-size:16px}
+}
+
+/* iPhone (Safari): the multiply blend is ignored inside the scrolling gallery, the white photo background then showed
+   as a white box in the grey frame. Each slide carries the grey itself, so the blend works within the slide everywhere. */
+.vz-pdp .vz-main-photo .gallery-track .gallery.original-photos{background:var(--vz-photo);isolation:isolate}
+.vz-thumbs button{isolation:isolate}

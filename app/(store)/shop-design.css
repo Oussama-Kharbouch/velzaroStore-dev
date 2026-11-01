@@ -271,6 +271,7 @@ main.vz-home,main.vz-shop{max-width:none;margin:0}
   .main-header.vz-header{grid-template-columns:auto minmax(0,1fr) auto}
   .main-header.vz-header .header-pages,.main-header.vz-header .vz-header-start .language-control,.main-header.vz-header .vz-header-end>.vz-icon-btn{display:none}
   .main-header.vz-header .vz-header-end .language-control{display:flex;gap:5px;margin-inline-end:4px;font-size:12px}
+  .main-header.vz-header.product-header .vz-header-end>.vz-cart-btn{display:grid}
   .main-header.vz-header .vz-header-end .language-switch{width:42px;height:24px}
   .main-header.vz-header .vz-header-end .language-switch>span{width:18px;height:18px}
   .main-header.vz-header .vz-header-end .language-switch[aria-checked=true]>span{transform:translateX(18px)}
@@ -363,6 +364,7 @@ main.vz-home,main.vz-shop{max-width:none;margin:0}
 @media(max-width:400px){
   .main-header.vz-header{padding:0 4px;gap:4px}
   .main-header.vz-header>.logo{font-size:21px}
+  .main-header.vz-header.product-header>.logo{font-size:18.5px}
   .main-header.vz-header .vz-header-end .language-control{gap:4px;margin-inline-end:2px;font-size:11px}
   .main-header.vz-header .vz-header-end .language-switch{width:38px;height:22px}
   .main-header.vz-header .vz-header-end .language-switch>span{width:16px;height:16px}

@@ -1,7 +1,7 @@
 'use client';
 /* eslint-disable @next/next/no-img-element -- catalogue photos (R2) are served as they are. */
 import { useEffect, useRef, useState, type ReactNode, type SVGProps } from 'react';
-import { BadgeCheck, Banknote, ChevronLeft, ChevronRight, HelpCircle, Plus, Timer, Truck, X, Zap } from 'lucide-react';
+import { Banknote, ChevronDown, ChevronLeft, ChevronRight, Headset, Heart, HelpCircle, ShieldCheck, Tag, Timer, Truck, X, Zap } from 'lucide-react';
 import WhatsappIcon from '../../components/whatsapp-icon';
 import type { PromoCampaign } from '../../lib/promo';
 
@@ -68,12 +68,13 @@ export function SneakerIcon({ size = 20, ...rest }: { size?: number } & SVGProps
 
 export function TrustBadges({ lang }: { lang: Lang }) {
   const items = [
-    { icon: Truck, title: pick(lang, 'التوصيل مجاني', 'Livraison gratuite'), text: pick(lang, 'لجميع أنحاء المغرب', 'partout au Maroc') },
+    { icon: Truck, title: pick(lang, 'توصيل سريع', 'Livraison rapide'), text: pick(lang, 'لجميع المدن', 'dans toutes les villes') },
     { icon: Banknote, title: pick(lang, 'الدفع عند الاستلام', 'Paiement à la livraison'), text: pick(lang, 'كتخلص ملي توصلك', 'à la réception') },
-    { icon: BadgeCheck, title: pick(lang, 'تأكيد الطلب', 'Commande confirmée'), text: pick(lang, 'كنتواصلو معاك قبل الإرسال', 'avec vous avant l’envoi') },
+    { icon: ShieldCheck, title: pick(lang, 'جودة مضمونة', 'Qualité garantie'), text: pick(lang, 'ضمان الجودة 100%', 'garantie 100 %') },
+    { icon: Headset, title: pick(lang, 'دعم العملاء', 'Support client'), text: pick(lang, 'طوال الأسبوع', '7 jours sur 7') },
   ];
   return <ul className="vz-trust" aria-label={pick(lang, 'الضمانات', 'Nos engagements')}>
-    {items.map(({ icon: Icon, title, text }) => <li key={title}><Icon size={22} aria-hidden="true"/><span><b>{title}</b><small>{text}</small></span></li>)}
+    {items.map(({ icon: Icon, title, text }) => <li key={title}><Icon size={26} strokeWidth={1.8} aria-hidden="true"/><span><b>{title}</b><small>{text}</small></span></li>)}
   </ul>;
 }
 
@@ -94,7 +95,7 @@ export function ComfortSection({ lang, photos, name }: { lang: Lang; photos: str
   ];
   if (!photos.length) return null;
   return <section className="vz-section vz-comfort" dir={lang === 'ar' ? 'rtl' : 'ltr'} aria-labelledby="vz-comfort-title">
-    <h2 id="vz-comfort-title">{pick(lang, 'علاش غادي تعجبك هاد السبرديلة؟', 'Pourquoi vous allez l’adorer ?')}</h2>
+    <h2 id="vz-comfort-title" className="vz-center-title"><span>{pick(lang, 'علاش غادي تعجبك هاد السبرديلة؟', 'Pourquoi vous allez l’adorer ?')}</span></h2>
     <div className="vz-comfort-grid">
       {cards.map((card) => <article key={card.zoom}>
         <div className={'vz-comfort-photo zoom-' + card.zoom}><img src={card.img} alt={name + ' — ' + card.title} loading="lazy"/></div>
@@ -125,11 +126,8 @@ export function WhatsAppReviews({ lang }: { lang: Lang }) {
   if (!shots.length) return null;
   const scroll = (step: number) => track.current?.scrollBy({ left: step * track.current.clientWidth * 0.8, behavior: 'smooth' });
   return <section className="vz-section vz-reviews" dir={lang === 'ar' ? 'rtl' : 'ltr'} aria-labelledby="vz-reviews-title">
-    <div className="vz-section-head">
-      <span className="vz-wa-badge"><WhatsappIcon/></span>
-      <div><h2 id="vz-reviews-title">{pick(lang, 'رسائل الزبناء على واتساب', 'Messages de nos clients sur WhatsApp')}</h2>
-        <p>{pick(lang, 'شوف تجارب الزبناء ديالنا.', 'Découvrez l’expérience de nos clients.')}</p></div>
-    </div>
+    <h2 id="vz-reviews-title" className="vz-center-title"><span><span className="vz-wa-badge"><WhatsappIcon/></span>{pick(lang, 'آراء زبائننا على واتساب', 'Avis de nos clients sur WhatsApp')}</span></h2>
+    <p className="vz-center-sub">{pick(lang, 'شاهد بعض محادثات زبائننا بعد الشراء', 'Quelques conversations de nos clients après leur achat')}</p>
     <div className="vz-reviews-carousel">
       <button type="button" className="vz-carousel-arrow prev" aria-label={pick(lang, 'السابق', 'Précédent')} onClick={() => scroll(-1)}><ChevronLeft size={20}/></button>
       <div className="vz-reviews-track" ref={track} dir="ltr">
@@ -164,9 +162,39 @@ export function ProductFaq({ lang, whatsappHref }: { lang: Lang; whatsappHref: s
     { q: pick(lang, 'واش يمكن نبدل القياس؟', 'Puis-je échanger la pointure ?'), a: <>{pick(lang, `إيه، تقدر تبدل القياس خلال ${EXCHANGE_DAYS} أيام من الاستلام.`, `Oui, l’échange est possible sous ${EXCHANGE_DAYS} jours après réception.`)}{contact && <> {contact}</>}</> },
   ];
   return <section className="vz-section vz-faq" dir={lang === 'ar' ? 'rtl' : 'ltr'} aria-labelledby="vz-faq-title">
-    <div className="vz-section-head"><span className="vz-faq-badge"><HelpCircle size={22}/></span><h2 id="vz-faq-title">{pick(lang, 'الأسئلة الشائعة', 'Questions fréquentes')}</h2></div>
+    <h2 id="vz-faq-title" className="vz-faq-title">{pick(lang, 'الأسئلة الشائعة', 'Questions fréquentes')}<HelpCircle size={22} aria-hidden="true"/></h2>
     <div className="vz-faq-list">
-      {items.map((item) => <details key={item.q}><summary>{item.q}<Plus size={18} aria-hidden="true"/></summary><p>{item.a}</p></details>)}
+      {items.map((item) => <details key={item.q}><summary>{item.q}<ChevronDown size={18} aria-hidden="true"/></summary><p>{item.a}</p></details>)}
+    </div>
+  </section>;
+}
+
+/* -------------------------------------------------------- related products */
+
+export type RelatedItem = { id: string; title: string; name: string; image: string; price: string; old: string | null; discount: number | null; fav: boolean };
+
+/** "You may also like": other models first (one colourway each), then other colourways of this model. */
+export function RelatedProducts({ lang, items, onOpen, onFav }: { lang: Lang; items: RelatedItem[]; onOpen: (id: string) => void; onFav: (id: string) => void }) {
+  const track = useRef<HTMLDivElement>(null);
+  if (!items.length) return null;
+  const scroll = (step: number) => track.current?.scrollBy({ left: step * track.current.clientWidth * 0.8, behavior: 'smooth' });
+  return <section className="vz-section vz-related" dir={lang === 'ar' ? 'rtl' : 'ltr'} aria-labelledby="vz-related-title">
+    <h2 id="vz-related-title" className="vz-related-title"><Tag size={22} aria-hidden="true"/>{pick(lang, 'منتجات قد تعجبك', 'Vous aimerez aussi')}</h2>
+    <div className="vz-related-carousel">
+      <button type="button" className="vz-carousel-arrow prev" aria-label={pick(lang, 'السابق', 'Précédent')} onClick={() => scroll(-1)}><ChevronLeft size={20}/></button>
+      <div className="vz-related-track" ref={track} dir="ltr">
+        {items.map((it) => <article key={it.id} className="vz-related-card" dir={lang === 'ar' ? 'rtl' : 'ltr'}>
+          {it.discount !== null && <span className="vz-related-badge" dir="ltr">-{it.discount}%</span>}
+          <button type="button" className="vz-related-fav" aria-label={pick(lang, 'المفضلة', 'Favoris') + ' — ' + it.title} aria-pressed={it.fav} onClick={() => onFav(it.id)}><Heart size={18} fill={it.fav ? 'currentColor' : 'none'}/></button>
+          <button type="button" className="vz-related-open" onClick={() => onOpen(it.id)}>
+            <span className="vz-related-photo"><img src={it.image} alt="" loading="lazy"/></span>
+            <b><bdi>{it.title}</bdi></b>
+            <small>{it.name}</small>
+            <span className="vz-related-price"><strong>{it.price}</strong>{it.old && <del>{it.old}</del>}</span>
+          </button>
+        </article>)}
+      </div>
+      <button type="button" className="vz-carousel-arrow next" aria-label={pick(lang, 'التالي', 'Suivant')} onClick={() => scroll(1)}><ChevronRight size={20}/></button>
     </div>
   </section>;
 }
