@@ -1,7 +1,7 @@
 'use client';
 /* eslint-disable @next/next/no-img-element -- catalogue photos (R2) are served as they are. */
 import { useEffect, useRef, useState, type ReactNode, type SVGProps } from 'react';
-import { BadgeCheck, Banknote, ChevronLeft, ChevronRight, HelpCircle, Plus, Truck, X } from 'lucide-react';
+import { BadgeCheck, Banknote, ChevronLeft, ChevronRight, HelpCircle, Plus, Timer, Truck, X, Zap } from 'lucide-react';
 import WhatsappIcon from '../../components/whatsapp-icon';
 import type { PromoCampaign } from '../../lib/promo';
 
@@ -19,17 +19,13 @@ export const verifiedWhatsappScreenshots: string[] = [];
 const DELIVERY_DELAY: { ar: string; fr: string } = { ar: 'خلال 24 حتى 72 ساعة', fr: 'sous 24 à 72 h' };
 const EXCHANGE_DAYS = 7;
 
-/* ------------------------------------------------------------------ red bar */
+/* ------------------------------------------------------------- offer band */
 
 /**
- * Red bar above the header of the product pages. With a running campaign (lib/promo.ts): the offer
- * and its countdown, identical for every visitor; otherwise only free delivery and cash on delivery.
+ * "Limited offer" band above the header of the Cloudtilt product pages, only while a campaign runs
+ * (lib/promo.ts): time left until its end, identical for every visitor; no campaign, no band.
  */
-/**
- * variant "product": offer and countdown (product pages); "shop": offer, delivery line and countdown side
- * by side (home page and shop sections).
- */
-export function PromoBar({ lang, promo, variant = 'product' }: { lang: Lang; promo: PromoCampaign | null; variant?: 'product' | 'shop' }) {
+export function PromoBar({ lang, promo }: { lang: Lang; promo: PromoCampaign | null }) {
   // Browser time, known once the page is interactive: until then the boxes show -- (no jump in the count).
   const [now, setNow] = useState<number | null>(null);
   useEffect(() => {
@@ -42,22 +38,21 @@ export function PromoBar({ lang, promo, variant = 'product' }: { lang: Lang; pro
   }, [promo]);
   const active = promo !== null && (now === null || ((promo.startAt === null || now >= promo.startAt) && now < promo.endAt));
   const left = active && now !== null ? Math.max(0, Math.floor((promo.endAt - now) / 1000)) : null;
-  const hours = promo && promo.startAt !== null ? Math.round((promo.endAt - promo.startAt) / 3600000) : null;
-  const units = lang === 'ar' ? ['ساعة', 'دقيقة', 'ثانية'] : ['heures', 'min', 'sec'];
+  const units = lang === 'ar' ? ['ساعة', 'دقيقة', 'ثانية'] : ['h', 'min', 'sec'];
   // Without a running campaign there is nothing to announce: no bar at all.
   if (!active) return null;
-  const offer = <strong className="vz-promo-offer">{hours
-      ? pick(lang, `🔥 عرض خاص لمدة ${hours} ساعة فقط`, `🔥 Offre spéciale de ${hours} h seulement`)
-      : pick(lang, '🔥 عرض خاص لفترة محدودة', '🔥 Offre spéciale à durée limitée')}</strong>;
-  return <div className={'vz-promo' + (variant === 'shop' ? ' vz-promo-shop' : '')} dir={lang === 'ar' ? 'rtl' : 'ltr'} role="region" aria-label={pick(lang, 'العرض الحالي', 'Offre en cours')}>
-    {variant === 'shop'
-      ? <div className="vz-promo-copy">{offer}<span className="vz-promo-delivery"><Truck size={18} aria-hidden="true"/>{pick(lang, 'التوصيل مجاني لجميع أنحاء المغرب + الدفع عند الاستلام', 'Livraison gratuite partout au Maroc + paiement à la livraison')}</span></div>
-      : offer}
-    <div className="vz-promo-timer" dir="ltr" role="timer" aria-label={pick(lang, 'الوقت المتبقي للعرض', 'Temps restant avant la fin de l’offre')}>
-      {(left === null ? [null, null, null] : [Math.floor(left / 3600), Math.floor((left % 3600) / 60), left % 60]).map((value, i) => <div key={i}>
-        <b>{value === null ? '--' : String(value).padStart(2, '0')}</b><small>{units[i]}</small>
+  const values = left === null ? [null, null, null] : [Math.floor(left / 3600), Math.floor((left % 3600) / 60), left % 60];
+  // Black band: stopwatch, time left (hours first in the reading direction), "ends in", red "limited offer" block.
+  return <div className="vz-flash" dir={lang === 'ar' ? 'rtl' : 'ltr'} role="region" aria-label={pick(lang, 'العرض الحالي', 'Offre en cours')}>
+    <Timer className="vz-flash-icon" size={26} strokeWidth={2} aria-hidden="true"/>
+    <div className="vz-flash-timer" role="timer" aria-label={pick(lang, 'الوقت المتبقي للعرض', 'Temps restant avant la fin de l’offre')}>
+      {values.map((value, i) => <div key={i} className="vz-flash-unit">
+        {i > 0 && <i aria-hidden="true">:</i>}
+        <span><b>{value === null ? '--' : String(value).padStart(2, '0')}</b><small>{units[i]}</small></span>
       </div>)}
     </div>
+    <span className="vz-flash-ends">{pick(lang, 'ينتهي خلال:', 'Fin dans :')}</span>
+    <strong className="vz-flash-offer"><span>{pick(lang, 'عرض محدود', 'Offre limitée')}</span><Zap size={22} fill="currentColor" strokeWidth={0} aria-hidden="true"/></strong>
   </div>;
 }
 

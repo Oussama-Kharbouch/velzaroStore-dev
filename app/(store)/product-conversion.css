@@ -5,13 +5,36 @@
  */
 :root{--vz-green:#008a43;--vz-green-dark:#00743a;--vz-red:#d40a27;--vz-ink:#111;--vz-photo:#f3f4f4;--vz-line:#e2e6e4;--vz-muted:#5c625f}
 
-/* ---------------------------------------------------------------- red bar */
-.vz-promo{background:var(--vz-red);color:#fff;text-align:center;display:flex;flex-direction:column;align-items:center;gap:3px;padding:9px 12px 10px;line-height:1.35}
-.vz-promo-offer{font-size:15px;font-weight:800}
-.vz-promo-timer{display:flex;gap:6px;margin-top:5px}
-.vz-promo-timer>div{min-width:54px;background:#fff;color:var(--vz-red);border-radius:9px;padding:3px 6px 4px;display:grid;justify-items:center;line-height:1.15;box-shadow:0 2px 6px #0000001f}
-.vz-promo-timer b{font-size:19px;font-weight:800;font-variant-numeric:tabular-nums}
-.vz-promo-timer small{font-size:10px;font-weight:600}
+/* ------------------------------------------------- offer band (Cloudtilt) */
+/* Black band: stopwatch, red time boxes, "ends in", slanted red "limited offer" block on the left. */
+.vz-flash{display:flex;align-items:center;min-height:58px;overflow:hidden;background:#111;color:#fff}
+.vz-flash[dir=ltr]{flex-direction:row-reverse}
+.vz-flash-icon{flex-shrink:0;margin:0 16px}
+.vz-flash-timer{display:flex;align-items:flex-start;flex-shrink:0}
+.vz-flash-unit{display:flex;align-items:flex-start}
+.vz-flash-unit i{width:14px;color:#fff;font-size:20px;font-style:normal;font-weight:800;line-height:34px;text-align:center}
+.vz-flash-unit span{display:grid;justify-items:center;gap:2px}
+.vz-flash-unit b{display:grid;place-items:center;min-width:42px;height:34px;padding:0 4px;border-radius:7px;background:#e50924;color:#fff;font-size:21px;font-weight:800;line-height:1;font-variant-numeric:tabular-nums}
+.vz-flash-unit small{color:#e6e6e6;font-size:10.5px;font-weight:600;line-height:1}
+.vz-flash-ends{flex-shrink:0;margin:0 14px;font-size:15px;font-weight:700;white-space:nowrap}
+.vz-flash-offer{align-self:stretch;display:flex;align-items:center;gap:8px;margin-right:auto;padding:0 30px 0 18px;background:linear-gradient(100deg,#c4001b,#e50924 60%);color:#fff;font-size:20px;font-weight:800;white-space:nowrap;clip-path:polygon(0 0,100% 0,calc(100% - 18px) 100%,0 100%)}
+.vz-flash-offer svg{flex-shrink:0;color:#ffc21a}
+@media(max-width:600px){
+  .vz-flash{min-height:52px}
+  .vz-flash-icon{width:22px;height:22px;margin:0 10px}
+  .vz-flash-unit i{width:10px;font-size:17px;line-height:30px}
+  .vz-flash-unit b{min-width:34px;height:30px;font-size:18px;border-radius:6px}
+  .vz-flash-unit small{font-size:9.5px}
+  .vz-flash-ends{margin:0 8px;font-size:12.5px}
+  .vz-flash-offer{gap:5px;padding:0 22px 0 10px;font-size:15.5px;clip-path:polygon(0 0,100% 0,calc(100% - 14px) 100%,0 100%)}
+  .vz-flash-offer svg{width:18px;height:18px}
+}
+@media(max-width:374px){
+  .vz-flash-icon{margin:0 7px}
+  .vz-flash-ends{margin:0 6px;font-size:11.5px}
+  .vz-flash-unit b{min-width:31px}
+  .vz-flash-offer{font-size:14px}
+}
 
 /* --------------------------------------------------------------- layout */
 .vz-pdp.prestige-detail{max-width:1240px;margin:0 auto;padding:18px 28px 48px}
@@ -149,11 +172,6 @@ html[dir=rtl] .vz-chevron{transform:scaleX(-1)}
   .mobile-nav.nav-on-product{display:none!important}
 }
 @media(max-width:768px){
-  .vz-promo{padding:8px 10px 9px}
-  .vz-promo-offer{font-size:14px}
-  .vz-promo-timer{gap:5px;margin-top:4px}
-  .vz-promo-timer>div{min-width:48px}
-  .vz-promo-timer b{font-size:17px}
   .vz-pdp.prestige-detail{padding:10px 0 24px}
   .vz-pdp .vz-breadcrumb{display:none}
   .vz-pdp .vz-main-photo{margin:0 12px;border-radius:16px}
@@ -186,7 +204,6 @@ html[dir=rtl] .vz-chevron{transform:scaleX(-1)}
   .vz-faq details p{padding:0 14px 14px}
 }
 @media(max-width:360px){
-  .vz-promo-timer>div{min-width:44px}
   .vz-sticky-buy button{font-size:16px;gap:9px}
   .vz-trust b{font-size:10.5px}
 }
