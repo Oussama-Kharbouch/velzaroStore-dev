@@ -141,7 +141,7 @@ main.vz-home,main.vz-shop{max-width:none;margin:0}
 .vz-section-title{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:30px;margin-bottom:16px}
 .vz-section-title h2{display:flex;align-items:center;gap:10px;margin:0;color:var(--vz-ink);font-size:28px;font-weight:800}
 .vz-section-title h2::before{content:'';flex-shrink:0;width:5px;height:.95em;border-radius:3px;background:var(--vz-red)}
-.vz-section-title a{display:flex;align-items:center;gap:6px;color:var(--vz-red);font-size:16px;font-weight:700}
+.vz-section-title a{display:flex;align-items:center;gap:6px;color:var(--vz-ink);font-size:16px;font-weight:700}
 .vz-section-title a:hover{text-decoration:underline}
 
 /* ========================================================= search window */
