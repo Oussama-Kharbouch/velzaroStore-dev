@@ -30,6 +30,8 @@ export type StoreProduct = {
   gender: string | null;
   /** Pairs sold (orders not deleted, nor cancelled, refused or returned): order of the "best sellers" of the home page. */
   sold: number;
+  /** Order in which the colourways were created (variant id, growing): the newest first in the home page "new" section. */
+  added: number;
   price: number;
   oldPrice: number | null;
   sizes: { size: number; available: boolean }[];
@@ -42,8 +44,8 @@ export type StoreProduct = {
 };
 
 /** Catalogue intégré au code, utilisé si la base ne répond pas : la boutique reste en ligne. */
-const fallbackCatalog = (): StoreProduct[] => staticProducts.map((p) => ({
-  ...p, model: PRODUCT.name, modelSlug: PRODUCT.slug, brand: null, nameAr: null, gender: null, sold: 0, price: PRICE, oldPrice: OLD_PRICE, sizes: SIZES.map((size) => ({ size, available: true })),
+const fallbackCatalog = (): StoreProduct[] => staticProducts.map((p, i) => ({
+  ...p, added: i, model: PRODUCT.name, modelSlug: PRODUCT.slug, brand: null, nameAr: null, gender: null, sold: 0, price: PRICE, oldPrice: OLD_PRICE, sizes: SIZES.map((size) => ({ size, available: true })),
   photos: photoKeys[p.id].map((key, i) => siteImageUrl({ key, legacy: legacyPhotoPaths[p.id][i] })),
   photoKeys: photoKeys[p.id],
   thumbnail: siteImageUrl({ key: photoKeys[p.id][0], legacy: legacyPhotoPaths[p.id][0] }),
@@ -122,6 +124,7 @@ export async function getStoreCatalog(): Promise<StoreProduct[]> {
       promotion: extra.get(r.slug)?.promotion ?? false,
       gender: r.gender,
       sold: soldBy.get(r.id) ?? 0,
+      added: r.id,
       price: r.price,
       oldPrice: r.oldPrice !== null && r.oldPrice > r.price ? r.oldPrice : null,
       sizes: sizes.filter((s) => s.variantId === r.id).map((s) => ({ size: s.size, available: s.stock === null || s.stock > 0 })),
