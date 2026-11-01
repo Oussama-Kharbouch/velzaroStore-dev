@@ -1,18 +1,23 @@
 /**
- * Promotional campaign shown in the red bar of the product pages (countdown).
+ * Limited-time offer shown on the product pages (« عرض محدود » band with its countdown) and in the
+ * black information bar of the shop.
  *
- * Read on the server at every request, from the Worker variables (Cloudflare → Workers →
- * velzaro-store → Settings → Variables), so a campaign is changed without touching the code:
- *   VZ_PROMO_START_AT=2026-11-01T18:00:00+01:00   (optional)
- *   VZ_PROMO_END_AT=2026-11-03T18:00:00+01:00
- * Every visitor sees the same end. No variable, or a campaign already over: no countdown and no
- * "limited time" wording, never a fake timer restarting at each visit.
- * NEXT_PUBLIC_VZ_PROMO_END_AT (first version of the page) is still accepted as the end.
+ * Set in the dashboard (Offre page, table shop_promo): start, end and the models concerned. Every
+ * visitor sees the same end. No end, or an end already passed: no countdown and no "limited time"
+ * wording, never a fake timer restarting at each visit.
+ * Until the dashboard has saved an offer once (no row yet), the Worker variables of the first
+ * version are still read: VZ_PROMO_START_AT, VZ_PROMO_END_AT (or NEXT_PUBLIC_VZ_PROMO_END_AT).
  */
+import "server-only";
+import { eq } from "drizzle-orm";
+import { getDb, schema } from "../db";
+
 export type PromoCampaign = {
   /** Start and end, in milliseconds since 1970; start null when not configured. */
   startAt: number | null;
   endAt: number;
+  /** Models (products.slug) whose product pages show the countdown; empty = every model. */
+  models: string[];
 };
 
 const instant = (value: string | undefined) => {
@@ -20,9 +25,27 @@ const instant = (value: string | undefined) => {
   return Number.isFinite(time) ? time : null;
 };
 
-export function getPromoCampaign(now = Date.now()): PromoCampaign | null {
-  const endAt = instant(process.env.VZ_PROMO_END_AT) ?? instant(process.env.NEXT_PUBLIC_VZ_PROMO_END_AT);
+/** Campaign from its dates, or null when it has no end or is already over. */
+export const campaignFrom = (startAt: number | null, endAt: number | null, models: string[], now = Date.now()): PromoCampaign | null => {
   if (endAt === null || endAt <= now) return null;
-  const startAt = instant(process.env.VZ_PROMO_START_AT);
-  return { startAt: startAt !== null && startAt < endAt ? startAt : null, endAt };
+  return { startAt: startAt !== null && startAt < endAt ? startAt : null, endAt, models };
+};
+
+/** Campaign of the Worker variables (first version, before the dashboard setting). */
+export const envCampaign = (now = Date.now()) => campaignFrom(
+  instant(process.env.VZ_PROMO_START_AT),
+  instant(process.env.VZ_PROMO_END_AT) ?? instant(process.env.NEXT_PUBLIC_VZ_PROMO_END_AT),
+  [],
+  now,
+);
+
+/** Offer currently configured, read at every request. A database error never breaks the shop. */
+export async function getPromoCampaign(now = Date.now()): Promise<PromoCampaign | null> {
+  try {
+    const [row] = await getDb().select().from(schema.shopPromo).where(eq(schema.shopPromo.id, 1)).limit(1);
+    if (row) return campaignFrom(row.startAt?.getTime() ?? null, row.endAt?.getTime() ?? null, row.models, now);
+  } catch (error) {
+    console.error("Offre illisible, variables du Worker utilisées :", error);
+  }
+  return envCampaign(now);
 }

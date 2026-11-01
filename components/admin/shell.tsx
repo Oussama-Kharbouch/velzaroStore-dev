@@ -1,7 +1,7 @@
 "use client";
 
 import { createContext, useContext, useEffect, useState } from "react";
-import { ExternalLink, LayoutDashboard, LogOut, Package, ShoppingCart, Users } from "lucide-react";
+import { ExternalLink, LayoutDashboard, LogOut, Package, ShoppingCart, Timer, Users } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { ADMIN_PATH } from "../../lib/site";
 
@@ -20,6 +20,7 @@ const NAV = [
   { href: ADMIN_PATH, label: "Tableau de bord", icon: LayoutDashboard },
   { href: `${ADMIN_PATH}/commandes`, label: "Commandes", icon: ShoppingCart, badge: true },
   { href: `${ADMIN_PATH}/produits`, label: "Produits", icon: Package },
+  { href: `${ADMIN_PATH}/offre`, label: "Offre limitée", icon: Timer },
   { href: `${ADMIN_PATH}/clients`, label: "Clients", icon: Users },
 ];
 

@@ -141,12 +141,12 @@ export default function Store({ catalog, media, promo = null, initialProductId, 
     // Men / women: their gender plus unisex and not yet classified colourways.
     const genderOk=(p:typeof products[0])=>page==='homme'?p.gender!=='femme':page==='femme'?p.gender!=='homme':true;
     const shopChips=[{id:'homme',ar:'رجال',fr:'Homme',icon:SneakerIcon},{id:'femme',ar:'نساء',fr:'Femme',icon:SneakerIcon},{id:'promotions',ar:'عروض',fr:'Offres',icon:Tag}];
-    // Home page: the newest colourways (creation order of the dashboard), three category tiles.
-    const newest=[...products].sort((a,b)=>b.added-a.added).slice(0,8);
+    // Home page: the first 8 colourways in the order chosen in the dashboard (Produits → ordre d'affichage), three category tiles.
+    const newest=products.slice(0,8);
     const homeTiles:CategoryTile[]=[
-      {id:'homme',label:lang==='ar'?'رجال':'Homme',tone:'grey',image:media.categoryPhotos.homme},
+      {id:'homme',label:lang==='ar'?'رجال':'Homme',tone:'grey',image:lang==='ar'?media.categoryPhotos['homme-rtl']:media.categoryPhotos.homme},
       {id:'femme',label:lang==='ar'?'نساء':'Femme',tone:'pink',image:media.categoryPhotos.femme},
-      {id:'promotions',label:lang==='ar'?'عروض':'Offres',tone:'red'},
+      {id:'promotions',label:lang==='ar'?'عروض':'Offres',tone:'red',image:media.categoryPhotos.promotions},
     ];
     const money=(value:number)=>value.toLocaleString('fr-FR')+' '+(lang==='ar'?'درهم':'DH');
     const titleOf=(p:typeof products[0])=>productContent(p.modelSlug).title?.[lang]??p.model;
@@ -213,7 +213,7 @@ export default function Store({ catalog, media, promo = null, initialProductId, 
     for(const p of colourways)if(p.id!==product.id&&!soldOut(p))related.push(p);
     related.splice(8);
     const whatsappHref=SHOP_WHATSAPP?'https://wa.me/'+SHOP_WHATSAPP+'?text='+encodeURIComponent(page==='detail'?t('Bonjour, j’ai une question sur')+' '+product.model+' '+t(product.name)+' : '+SITE_URL+pathOf(product):t('Bonjour, j’ai une question.')):null;
-    return <>{page==='detail'&&product.modelSlug==='cloudtilt'&&promo?<PromoBar lang={lang} promo={promo}/>:<TopInfoBar lang={lang} promo={promo}/>}<header className={'main-header vz-header'+(page==='detail'?' product-header':'')}>
+    return <>{page==='detail'&&promo&&(promo.models.length===0||promo.models.includes(product.modelSlug))?<PromoBar lang={lang} promo={promo}/>:<TopInfoBar lang={lang} promo={promo}/>}<header className={'main-header vz-header'+(page==='detail'?' product-header':'')}>
       <div className="vz-header-side vz-header-start"><button type="button" className="vz-icon-btn" aria-label={t("Menu")} aria-expanded={menuOpen} aria-controls="site-menu" onClick={()=>setMenuOpen(true)}><Menu size={27}/></button><LanguageSwitch lang={lang} onChange={setLang}/><button type="button" className="vz-icon-btn header-search" aria-label={t("Rechercher")} aria-expanded={search} onClick={() => setSearch(!search)}><Search size={25}/></button></div>
       <a className="logo vz-logo" href="/" onClick={()=>setMenuOpen(false)}>VELZARO<small>.store</small></a>
       <div className="vz-header-side vz-header-end"><nav className="header-pages" aria-label={t("Navigation principale")}><a className={page==='home'?'active':''} href="/">{t('Accueil')}</a><a className={page==='boutique'?'active':''} href="/boutique">{t('Boutique')}</a><a className={page==='promotions'?'active':''} href="/promotions">{lang==='ar'?'عروض':'Offres'}</a></nav><LanguageSwitch lang={lang} onChange={setLang}/><a className="vz-icon-btn vz-fav-btn" href="/favoris" aria-label={t("Favoris")+(favorites.length?' ('+favorites.length+')':'')}><Heart size={25}/>{favorites.length>0&&<b aria-hidden="true">{favorites.length}</b>}</a><button type="button" className="vz-icon-btn vz-cart-btn" aria-label={t("Ouvrir le panier")+(count?' ('+count+')':'')} onClick={() => setDrawer(true)}><ShoppingCart size={27}/><b aria-hidden="true">{count}</b></button></div>
@@ -262,7 +262,7 @@ export default function Store({ catalog, media, promo = null, initialProductId, 
         </div>
       </div>
       <WhatsAppReviews lang={lang}/>
-      {content.comfort&&<ComfortSection lang={lang} photos={product.photos} name={productTitle}/>}
+      {product.comfort.enabled&&<ComfortSection lang={lang} content={product.comfort} photos={product.photos} name={productTitle}/>}
       <ProductFaq lang={lang} whatsappHref={whatsappHref}/>
       <RelatedProducts lang={lang} items={related.map(p=>({id:p.id,title:titleOf(p),name:t(p.name).replace(' | ',' / '),image:p.thumbnail,price:money(p.price),old:p.oldPrice!==null?money(p.oldPrice):null,discount:p.oldPrice!==null?Math.round((p.oldPrice-p.price)/p.oldPrice*100):null,fav:favorites.includes(p.id)}))}
         onOpen={(id)=>{const p=byId(id);if(p)detail(p)}} onFav={fav}/>

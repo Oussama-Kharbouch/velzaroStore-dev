@@ -7,5 +7,5 @@ import { shopLang } from "../../../lib/shop-lang";
 export const dynamic = "force-dynamic";
 
 export default async function Page() {
-  return <Store catalog={await getStoreCatalog()} media={getStoreMedia()} promo={getPromoCampaign()} initialLang={await shopLang()} initialPage="homme"/>;
+  return <Store catalog={await getStoreCatalog()} media={getStoreMedia()} promo={await getPromoCampaign()} initialLang={await shopLang()} initialPage="homme"/>;
 }

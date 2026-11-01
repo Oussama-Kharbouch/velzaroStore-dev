@@ -36,6 +36,13 @@
       "when": 1792786670466,
       "tag": "0004_vignette_coloris",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1793561165383,
+      "tag": "0005_offre_confort",
+      "breakpoints": true
     }
   ]
 }

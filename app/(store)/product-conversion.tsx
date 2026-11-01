@@ -4,6 +4,7 @@ import { useEffect, useRef, useState, type ReactNode, type SVGProps } from 'reac
 import { Banknote, ChevronDown, ChevronLeft, ChevronRight, Headset, Heart, HelpCircle, ShieldCheck, Tag, Timer, Truck, X, Zap } from 'lucide-react';
 import WhatsappIcon from '../../components/whatsapp-icon';
 import type { PromoCampaign } from '../../lib/promo';
+import { inLang, type ComfortContent } from '../../lib/comfort';
 
 type Lang = 'ar' | 'fr';
 const pick = (lang: Lang, ar: string, fr: string) => (lang === 'ar' ? ar : fr);
@@ -81,26 +82,23 @@ export function TrustBadges({ lang }: { lang: Lang }) {
 /* --------------------------------------------------------- comfort section */
 
 /**
- * Four photo cards built from the colourway's own photos (sole, upper, top view, whole shoe).
- * Gallery order of the catalogue: 1 pair, 2 profile, 3 top, 4 sole… (lib/catalog.mjs galleryLabels);
- * a colourway with fewer photos uses its first one.
+ * "Why you will like it": the section of the model written in the dashboard (lib/comfort.ts).
+ * Each card shows the photo of the chosen number of the colourway being viewed (its first photo
+ * when it has fewer), so every colourway keeps its own pictures.
  */
-export function ComfortSection({ lang, photos, name }: { lang: Lang; photos: string[]; name: string }) {
-  const photo = (i: number) => photos[i] ?? photos[0];
-  const cards = [
-    { img: photo(3), zoom: 'sole', title: pick(lang, 'راحة فالمشي', 'Confort de marche'), text: pick(lang, 'تصميم النعل البارز كيعطي للسبرديلة مظهر عصري مناسب للمشي اليومي.', 'Une semelle au profil sculpté, au look moderne, pour la marche au quotidien.') },
-    { img: photo(1), zoom: 'mesh', title: pick(lang, 'قماش خفيف ومهوّي', 'Tissu léger et aéré'), text: pick(lang, 'النسيج الشبكي Mesh كيساعد على التهوية وكيعطي إحساس بالخفة.', 'La maille (mesh) aide à l’aération et donne une sensation de légèreté.') },
-    { img: photo(2), zoom: 'top', title: pick(lang, 'سهلة فاللبسة', 'Facile à porter'), text: pick(lang, 'تصميم عملي وتفاصيل مدروسة للاستعمال اليومي.', 'Un design pratique et des finitions soignées pour tous les jours.') },
-    { img: photo(0), zoom: 'style', title: pick(lang, 'ستايل عصري', 'Style moderne'), text: pick(lang, 'كتجي مع الجينز واللوك الكاجوال والسبور.', 'S’associe au jean et aux tenues casual ou sport.') },
-  ];
-  if (!photos.length) return null;
+export function ComfortSection({ lang, content, photos, name }: { lang: Lang; content: ComfortContent; photos: string[]; name: string }) {
+  if (!photos.length || !content.cards.length) return null;
+  const photo = (n: number) => photos[n - 1] ?? photos[0];
   return <section className="vz-section vz-comfort" dir={lang === 'ar' ? 'rtl' : 'ltr'} aria-labelledby="vz-comfort-title">
-    <h2 id="vz-comfort-title" className="vz-center-title"><span>{pick(lang, 'علاش غادي تعجبك هاد السبرديلة؟', 'Pourquoi vous allez l’adorer ?')}</span></h2>
+    <h2 id="vz-comfort-title" className="vz-center-title"><span>{inLang(content.title, lang)}</span></h2>
     <div className="vz-comfort-grid">
-      {cards.map((card) => <article key={card.zoom}>
-        <div className={'vz-comfort-photo zoom-' + card.zoom}><img src={card.img} alt={name + ' — ' + card.title} loading="lazy"/></div>
-        <div className="vz-comfort-copy"><h3>{card.title}</h3><p>{card.text}</p></div>
-      </article>)}
+      {content.cards.map((card, i) => {
+        const title = inLang(card.title, lang);
+        return <article key={i}>
+          <div className={'vz-comfort-photo zoom-' + card.zoom}><img src={photo(card.photo)} alt={name + (title ? ' — ' + title : '')} loading="lazy"/></div>
+          <div className="vz-comfort-copy">{title && <h3>{title}</h3>}{inLang(card.text, lang) && <p>{inLang(card.text, lang)}</p>}</div>
+        </article>;
+      })}
     </div>
   </section>;
 }

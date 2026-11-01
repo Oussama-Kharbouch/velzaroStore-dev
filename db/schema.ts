@@ -1,9 +1,10 @@
 import { sql } from "drizzle-orm";
 import {
-  boolean, check, index, integer, pgTable, serial, text, timestamp, uniqueIndex,
+  boolean, check, index, integer, jsonb, pgTable, serial, text, timestamp, uniqueIndex,
 } from "drizzle-orm/pg-core";
 import { ORDER_STATUSES, PAYMENT_STATUSES } from "../lib/orders/status";
 import { GENDERS } from "../lib/catalog-categories";
+import type { ComfortContent } from "../lib/comfort";
 
 export { ORDER_STATUSES, PAYMENT_STATUSES, GENDERS };
 
@@ -23,6 +24,8 @@ export const products = pgTable("products", {
   // Marque du modèle (« On ») ; null = non renseignée. Saisie dans le dashboard.
   brand: text("brand"),
   active: boolean("active").notNull().default(true),
+  // Section « Pourquoi vous allez l'adorer » de la fiche (dashboard) ; null = texte intégré (lib/comfort.ts).
+  comfort: jsonb("comfort").$type<ComfortContent>(),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
 
@@ -154,3 +157,16 @@ export const orderItems = pgTable("order_items", {
   index("order_items_order_idx").on(table.orderId),
   check("order_items_quantity_positive", sql`${table.quantity} > 0`),
 ]);
+
+/**
+ * Offre limitée (bandeau « عرض محدود » avec compte à rebours), réglée dans le dashboard.
+ * Une seule ligne (id = 1). Fin nulle = aucune offre ; modèles vides = tous les modèles.
+ * Sans ligne, la boutique lit encore VZ_PROMO_START_AT / VZ_PROMO_END_AT (lib/promo.ts).
+ */
+export const shopPromo = pgTable("shop_promo", {
+  id: integer("id").primaryKey().default(1),
+  startAt: timestamp("start_at", { withTimezone: true }),
+  endAt: timestamp("end_at", { withTimezone: true }),
+  models: text("models").array().notNull().default(sql`'{}'::text[]`),
+  updatedAt: timestamp("updated_at", { withTimezone: true }).notNull().defaultNow(),
+}, (table) => [check("shop_promo_single_row", sql`${table.id} = 1`)]);

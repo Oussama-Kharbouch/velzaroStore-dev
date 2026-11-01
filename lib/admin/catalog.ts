@@ -18,6 +18,7 @@ import { GENDERS } from "../catalog-categories";
 import { PHOTOS_MAX, isImageRef, slugify } from "../media/rules";
 import { imageUrl } from "../r2";
 import { firstIssue, ko, ok, type Result } from "./respond";
+import { COMFORT_CARDS_MAX, COMFORT_PHOTO_MAX, COMFORT_ZOOMS } from "../comfort";
 
 const { products, variants, variantSizes, productImages, orderItems } = schema;
 
@@ -226,19 +227,38 @@ export const createModel = async (payload: unknown): Promise<Result<{ id: number
   });
 };
 
-/** Brand of a model (« On »). Body: { brand } — empty = no brand. */
+/** Text in both languages; one of them may stay empty (the shop then shows the other one). */
+const bilingual = (label: string, max: number) => z.object({
+  ar: z.string().trim().max(max, `${label} (arabe) : ${max} caractères maximum.`),
+  fr: z.string().trim().max(max, `${label} (français) : ${max} caractères maximum.`),
+}).refine((t) => t.ar !== "" || t.fr !== "", { message: `${label} : écrivez-le au moins dans une langue.` });
+
+/** « Pourquoi vous allez l'adorer » section of a model: title and 1 to 6 photo cards. */
+const comfortSchema = z.object({
+  enabled: z.boolean(),
+  title: bilingual("Titre de la section", 80),
+  cards: z.array(z.object({
+    photo: z.number().int().min(1).max(COMFORT_PHOTO_MAX, `Photo : numéro 1 à ${COMFORT_PHOTO_MAX}.`),
+    zoom: z.enum(COMFORT_ZOOMS),
+    title: bilingual("Titre de la carte", 60),
+    text: z.object({ ar: z.string().trim().max(240, "Texte (arabe) : 240 caractères maximum."), fr: z.string().trim().max(240, "Texte (français) : 240 caractères maximum.") }),
+  })).min(1, "Gardez au moins une carte.").max(COMFORT_CARDS_MAX, `${COMFORT_CARDS_MAX} cartes au plus.`),
+});
+
 /**
- * Name and/or brand of a model. Body: { name?, brand? } — empty brand = no brand.
+ * Name, brand and/or « Pourquoi vous allez l'adorer » section of a model.
+ * Body: { name?, brand?, comfort? } — empty brand = no brand.
  * The slug (address /<model>/<colourway>, Meta catalogue ids) never changes: shared links keep working.
  */
 export const updateModel = async (id: number, payload: unknown): Promise<Result<{ id: number }>> => {
   const parsed = z.object({
     name: z.string().trim().min(2, "Nom du modèle : 2 caractères minimum.").max(60, "Nom du modèle : 60 caractères maximum.").optional(),
     brand: z.string().trim().max(40, "Marque : 40 caractères maximum.").optional(),
+    comfort: comfortSchema.optional(),
   }).safeParse(payload);
   if (!parsed.success) return firstIssue(parsed.error);
-  const { name, brand } = parsed.data;
-  if (name === undefined && brand === undefined) return ko("Rien à enregistrer.");
+  const { name, brand, comfort } = parsed.data;
+  if (name === undefined && brand === undefined && comfort === undefined) return ko("Rien à enregistrer.");
 
   return inTransaction(async (tx) => {
     if (name !== undefined) {
@@ -249,6 +269,7 @@ export const updateModel = async (id: number, payload: unknown): Promise<Result<
     const updated = await tx.update(products).set({
       ...(name !== undefined ? { name } : {}),
       ...(brand !== undefined ? { brand: brand || null } : {}),
+      ...(comfort !== undefined ? { comfort } : {}),
     }).where(eq(products.id, id)).returning({ id: products.id });
     return updated.length ? ok({ id }) : ko("Ce modèle n'existe pas.");
   });

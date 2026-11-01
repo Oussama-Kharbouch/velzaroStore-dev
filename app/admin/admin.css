@@ -984,3 +984,49 @@ body:has(.ad) { margin: 0; }
   .vz-form-grid { grid-template-columns: 1fr; }
   .vz-photos { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
+
+/* ===================================================== limited-time offer */
+.vz-promo-editor form { display: grid; gap: 16px; }
+.vz-promo-status { display: flex; align-items: center; gap: 10px; margin: 0 0 16px; padding: 12px 14px; border: 1px solid var(--ad-line); border-radius: 10px; font-size: 14px; font-weight: 600; }
+.vz-promo-status svg { flex-shrink: 0; width: 20px; height: 20px; }
+.vz-promo-status.is-on { border-color: #f3c3ca; background: #fff1f3; color: #b0001c; }
+.vz-promo-status.is-next { border-color: #ead9b8; background: #fbf5ea; color: var(--ad-amber); }
+.vz-promo-status.is-off { background: var(--ad-shell); color: var(--ad-muted); }
+.vz-promo-block { display: grid; gap: 12px; min-width: 0; margin: 0; padding: 14px 16px 16px; border: 1px solid var(--ad-line); border-radius: 12px; }
+.vz-promo-block legend { padding: 0 6px; font-size: 14px; font-weight: 700; }
+.vz-promo-block:disabled { opacity: .5; }
+.vz-promo-hint { margin: 0; color: var(--ad-muted); font-size: 13px; line-height: 1.6; }
+.vz-promo-quick { display: flex; flex-wrap: wrap; gap: 8px; }
+.vz-promo-quick .is-chosen { border-color: var(--orange); background: var(--orange); color: #fff; }
+.vz-promo-dates { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.vz-promo-models { display: flex; flex-wrap: wrap; gap: 8px 18px; }
+.vz-promo-check { display: inline-flex; align-items: center; gap: 8px; font-size: 14px; cursor: pointer; }
+.vz-promo-check input { width: 17px; height: 17px; accent-color: #111; }
+.vz-promo-actions { display: flex; flex-wrap: wrap; gap: 10px; }
+.vz-promo-stop { border-color: #eccecb; color: var(--ad-red); }
+.vz-promo-stop:hover:not(:disabled) { border-color: var(--ad-red); background: #fdf1f0; }
+
+/* ======================================== « Pourquoi vous allez l'adorer » */
+.vz-comfort-editor { display: grid; gap: 14px; }
+.vz-comfort-toggle { font-weight: 600; }
+.vz-comfort-pair { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.vz-comfort-pair textarea { resize: vertical; }
+.vz-comfort-card { position: relative; }
+.vz-comfort-card-tools { position: absolute; top: -14px; right: 12px; display: flex; gap: 6px; }
+.vz-comfort-card-tools .ad-btn { min-height: 30px; padding: 0 8px; background: #fff; }
+.vz-comfort-card-tools svg { width: 15px; height: 15px; }
+.vz-comfort-card-body { display: grid; grid-template-columns: 170px minmax(0, 1fr); gap: 14px; align-items: start; }
+.vz-comfort-preview { display: grid; place-items: center; aspect-ratio: 4 / 3; overflow: hidden; border-radius: 10px; background: #f2f2f2; color: var(--ad-muted); font-size: 12px; }
+.vz-comfort-preview img { width: 100%; height: 100%; object-fit: contain; mix-blend-mode: multiply; }
+.vz-comfort-preview.zoom-sole img { object-fit: cover; transform: scale(1.12); }
+.vz-comfort-preview.zoom-mesh img { object-fit: cover; transform: scale(2.2); transform-origin: 30% 55%; }
+.vz-comfort-card-fields { display: grid; gap: 10px; min-width: 0; }
+.vz-comfort-photos { display: flex; flex-wrap: wrap; gap: 6px; }
+.vz-comfort-photos button { position: relative; width: 58px; height: 46px; padding: 2px; border: 2px solid transparent; border-radius: 8px; background: #f2f2f2; cursor: pointer; }
+.vz-comfort-photos button.is-chosen { border-color: #e50924; }
+.vz-comfort-photos img { width: 100%; height: 100%; object-fit: contain; mix-blend-mode: multiply; }
+.vz-comfort-photos small { position: absolute; right: 2px; bottom: 1px; padding: 0 4px; border-radius: 4px; background: #111; color: #fff; font-size: 10px; font-weight: 700; line-height: 14px; }
+@media (max-width: 700px) {
+  .vz-promo-dates, .vz-comfort-pair, .vz-comfort-card-body { grid-template-columns: minmax(0, 1fr); }
+  .vz-comfort-preview { max-width: 220px; }
+}

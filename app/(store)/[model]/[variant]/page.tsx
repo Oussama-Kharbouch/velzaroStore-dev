@@ -28,5 +28,5 @@ export default async function ProductPage({ params }: { params: Params }) {
   if (!product) redirect("/boutique");
   // Right colourway under another model's address: the proper one.
   if (model !== product.modelSlug) redirect(`/${product.modelSlug}/${variant}`);
-  return <Store catalog={catalog} media={getStoreMedia()} promo={getPromoCampaign()} initialLang={await shopLang()} initialProductId={variant}/>;
+  return <Store catalog={catalog} media={getStoreMedia()} promo={await getPromoCampaign()} initialLang={await shopLang()} initialProductId={variant}/>;
 }

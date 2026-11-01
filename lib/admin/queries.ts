@@ -5,6 +5,8 @@ import { getDb, schema } from "../../db";
 import { LOST_STATUSES } from "../orders/status";
 import { imageUrl } from "../r2";
 import { LOW_STOCK_THRESHOLD } from "./thresholds";
+import { resolveComfort } from "../comfort";
+import { productContent } from "../product-content";
 
 const { orders, products, variants, variantSizes } = schema;
 
@@ -118,3 +120,18 @@ export type CatalogVariant = Awaited<ReturnType<typeof listCatalog>>[number];
 export const listModels = () => getDb().select({ id: products.id, name: products.name, brand: products.brand })
   .from(products).orderBy(asc(products.id));
 export type CatalogModel = Awaited<ReturnType<typeof listModels>>[number];
+
+/**
+ * « Pourquoi vous allez l'adorer » section of a model, as shown on the shop (saved text or the
+ * built-in one), with the photos of its first colourway to pick the card pictures from.
+ */
+export const getModelComfort = async (id: number) => {
+  const db = getDb();
+  const [model] = await db.select({ slug: products.slug, comfort: products.comfort }).from(products).where(eq(products.id, id)).limit(1);
+  if (!model) return null;
+  const [first] = await db.select({ id: variants.id }).from(variants).where(eq(variants.productId, id)).orderBy(asc(variants.position), asc(variants.id)).limit(1);
+  const photos = first
+    ? (await db.select({ url: schema.productImages.url }).from(schema.productImages).where(eq(schema.productImages.variantId, first.id)).orderBy(asc(schema.productImages.position))).map((p) => imageUrl(p.url))
+    : [];
+  return { content: resolveComfort(model.comfort, productContent(model.slug).comfort), saved: model.comfort !== null, photos };
+};

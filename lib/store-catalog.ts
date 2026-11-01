@@ -9,6 +9,8 @@ import { getDb, schema } from "../db";
 import { EXTRA_MODELS, OLD_PRICE, PRICE, PRODUCT, SIZES, galleryLabels, legacyPhotoPaths, photoKeys, products as staticProducts, siteImages } from "./catalog.mjs";
 import { imageKey, imageUrl, siteImageUrl } from "./r2";
 import { CLOSING_STATUSES } from "./orders/status";
+import { resolveComfort, type ComfortContent } from "./comfort";
+import { productContent } from "./product-content";
 
 const { products, variants, variantSizes, productImages, orders, orderItems } = schema;
 
@@ -30,8 +32,6 @@ export type StoreProduct = {
   gender: string | null;
   /** Pairs sold (orders not deleted, nor cancelled, refused or returned): order of the "best sellers" of the home page. */
   sold: number;
-  /** Order in which the colourways were created (variant id, growing): the newest first in the home page "new" section. */
-  added: number;
   price: number;
   oldPrice: number | null;
   sizes: { size: number; available: boolean }[];
@@ -41,11 +41,13 @@ export type StoreProduct = {
   photoKeys: string[];
   /** Colourway thumbnail of the product page: the one chosen in the dashboard, or its first photo. */
   thumbnail: string;
+  /** "Why you will like it" section of its model (dashboard, or built-in wording). */
+  comfort: ComfortContent;
 };
 
 /** Catalogue intégré au code, utilisé si la base ne répond pas : la boutique reste en ligne. */
-const fallbackCatalog = (): StoreProduct[] => staticProducts.map((p, i) => ({
-  ...p, added: i, model: PRODUCT.name, modelSlug: PRODUCT.slug, brand: null, nameAr: null, gender: null, sold: 0, price: PRICE, oldPrice: OLD_PRICE, sizes: SIZES.map((size) => ({ size, available: true })),
+const fallbackCatalog = (): StoreProduct[] => staticProducts.map((p) => ({
+  ...p, comfort: resolveComfort(null, productContent(PRODUCT.slug).comfort), model: PRODUCT.name, modelSlug: PRODUCT.slug, brand: null, nameAr: null, gender: null, sold: 0, price: PRICE, oldPrice: OLD_PRICE, sizes: SIZES.map((size) => ({ size, available: true })),
   photos: photoKeys[p.id].map((key, i) => siteImageUrl({ key, legacy: legacyPhotoPaths[p.id][i] })),
   photoKeys: photoKeys[p.id],
   thumbnail: siteImageUrl({ key: photoKeys[p.id][0], legacy: legacyPhotoPaths[p.id][0] }),
@@ -109,6 +111,15 @@ export async function getStoreCatalog(): Promise<StoreProduct[]> {
         .groupBy(orderItems.variantId),
     ]);
     const soldBy = new Map(sales.map((s) => [s.variantId, Number(s.sold)]));
+    // Section written in the dashboard, per model. Read apart: if it fails (column not created yet),
+    // the shop keeps its built-in wording instead of falling back to the built-in catalogue.
+    let savedComfort = new Map<string, ComfortContent | null>();
+    try {
+      const models = await db.select({ slug: products.slug, comfort: products.comfort }).from(products);
+      savedComfort = new Map(models.map((m) => [m.slug, m.comfort]));
+    } catch (error) {
+      console.error("Section « Pourquoi vous allez l'adorer » illisible, texte intégré utilisé :", error);
+    }
     // Rayon et promotion ne sont pas (encore) en base : ceux du catalogue intégré.
     const extra = new Map(staticProducts.map((p) => [p.id, p]));
 
@@ -124,7 +135,7 @@ export async function getStoreCatalog(): Promise<StoreProduct[]> {
       promotion: extra.get(r.slug)?.promotion ?? false,
       gender: r.gender,
       sold: soldBy.get(r.id) ?? 0,
-      added: r.id,
+      comfort: resolveComfort(savedComfort.get(r.modelSlug) ?? null, productContent(r.modelSlug).comfort),
       price: r.price,
       oldPrice: r.oldPrice !== null && r.oldPrice > r.price ? r.oldPrice : null,
       sizes: sizes.filter((s) => s.variantId === r.id).map((s) => ({ size: s.size, available: s.stock === null || s.stock > 0 })),
