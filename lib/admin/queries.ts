@@ -122,16 +122,20 @@ export const listModels = () => getDb().select({ id: products.id, name: products
 export type CatalogModel = Awaited<ReturnType<typeof listModels>>[number];
 
 /**
- * « Pourquoi vous allez l'adorer » section of a model, as shown on the shop (saved text or the
- * built-in one), with the photos of its first colourway to pick the card pictures from.
+ * « Pourquoi vous allez l'adorer » section of a colourway, as shown on the shop (saved cards or the
+ * built-in wording of its model), with its photos to pick the card pictures from.
  */
-export const getModelComfort = async (id: number) => {
+export const getVariantComfort = async (id: number) => {
   const db = getDb();
-  const [model] = await db.select({ slug: products.slug, comfort: products.comfort }).from(products).where(eq(products.id, id)).limit(1);
-  if (!model) return null;
-  const [first] = await db.select({ id: variants.id }).from(variants).where(eq(variants.productId, id)).orderBy(asc(variants.position), asc(variants.id)).limit(1);
-  const photos = first
-    ? (await db.select({ url: schema.productImages.url }).from(schema.productImages).where(eq(schema.productImages.variantId, first.id)).orderBy(asc(schema.productImages.position))).map((p) => imageUrl(p.url))
-    : [];
-  return { content: resolveComfort(model.comfort, productContent(model.slug).comfort), saved: model.comfort !== null, photos };
+  const [row] = await db.select({ comfort: variants.comfort, productId: variants.productId, modelSlug: products.slug, modelName: products.name })
+    .from(variants).innerJoin(products, eq(products.id, variants.productId)).where(eq(variants.id, id)).limit(1);
+  if (!row) return null;
+  const [photos, [siblings]] = await Promise.all([
+    db.select({ url: schema.productImages.url }).from(schema.productImages).where(eq(schema.productImages.variantId, id)).orderBy(asc(schema.productImages.position)),
+    db.select({ n: sql<number>`count(*)::int` }).from(variants).where(eq(variants.productId, row.productId)),
+  ]);
+  return {
+    content: resolveComfort(row.comfort, productContent(row.modelSlug).comfort), saved: row.comfort !== null,
+    photos: photos.map((p) => imageUrl(p.url)), modelName: row.modelName, colourways: siblings.n,
+  };
 };

@@ -7,4 +7,4 @@ CREATE TABLE "shop_promo" (
 	CONSTRAINT "shop_promo_single_row" CHECK ("shop_promo"."id" = 1)
 );
 --> statement-breakpoint
-ALTER TABLE "products" ADD COLUMN "comfort" jsonb;
+ALTER TABLE "variants" ADD COLUMN "comfort" jsonb;

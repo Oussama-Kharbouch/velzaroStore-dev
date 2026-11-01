@@ -5,10 +5,9 @@ import { ArrowLeft, ChevronRight, Plus } from "lucide-react";
 import { EmptyState } from "../../../../../../components/admin/bits";
 import AdminHeader from "../../../../../../components/admin/header";
 import ModelEditor from "../../../../../../components/admin/model-editor";
-import ComfortEditor from "../../../../../../components/admin/comfort-editor";
 import { categoryLabel } from "../../../../../../lib/catalog-categories";
 import { formatDH } from "../../../../../../lib/admin/format";
-import { getModelComfort, listCatalog, listModels, type CatalogVariant } from "../../../../../../lib/admin/queries";
+import { listCatalog, listModels, type CatalogVariant } from "../../../../../../lib/admin/queries";
 import { numericId } from "../../../../../../lib/admin/respond";
 import { ADMIN_PATH } from "../../../../../../lib/site";
 
@@ -28,9 +27,9 @@ const stockSummary = (v: CatalogVariant) => {
 export default async function ModelPage({ params }: { params: Promise<{ id: string }> }) {
   const id = numericId((await params).id);
   if (id === null) notFound();
-  const [models, catalog, comfort] = await Promise.all([listModels(), listCatalog(), getModelComfort(id)]);
+  const [models, catalog] = await Promise.all([listModels(), listCatalog()]);
   const model = models.find((m) => m.id === id);
-  if (!model || !comfort) notFound();
+  if (!model) notFound();
   const rows = catalog.filter((v) => v.productId === id);
   const online = rows.filter((v) => v.active).length;
   const sold = rows.reduce((sum, v) => sum + v.sold, 0);
@@ -51,16 +50,6 @@ export default async function ModelPage({ params }: { params: Promise<{ id: stri
             <p>{rows.length} coloris · {online} en ligne · {sold} paire{sold > 1 ? "s" : ""} vendue{sold > 1 ? "s" : ""}</p>
           </div>
           <ModelEditor id={model.id} name={model.name} brand={model.brand}/>
-        </section>
-
-        <section className="ad-panel" aria-labelledby="vz-comfort-title">
-          <div className="ad-panel-head">
-            <div>
-              <h2 id="vz-comfort-title">Section « Pourquoi vous allez l’adorer ? »</h2>
-              <p>Titre et cartes affichés sous les boutons d’achat des fiches {model.name} : choisissez la photo, le titre et le texte de chaque carte, en arabe et en français.{comfort.saved ? "" : " Texte d’origine pour l’instant."}</p>
-            </div>
-          </div>
-          <div className="ad-panel-body"><ComfortEditor id={model.id} content={comfort.content} photos={comfort.photos}/></div>
         </section>
 
         <section className="ad-panel vz-model-rows-panel" aria-labelledby="vz-rows-title">

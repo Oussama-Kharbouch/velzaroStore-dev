@@ -24,8 +24,6 @@ export const products = pgTable("products", {
   // Marque du modèle (« On ») ; null = non renseignée. Saisie dans le dashboard.
   brand: text("brand"),
   active: boolean("active").notNull().default(true),
-  // Section « Pourquoi vous allez l'adorer » de la fiche (dashboard) ; null = texte intégré (lib/comfort.ts).
-  comfort: jsonb("comfort").$type<ComfortContent>(),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });
 
@@ -49,6 +47,9 @@ export const variants = pgTable("variants", {
   // Vignette du coloris sur la fiche produit (clé R2 : une de ses photos, ou une vignette
   // 150×150 dédiée) ; null = sa 1re photo.
   thumbnail: text("thumbnail"),
+  // Section « Pourquoi vous allez l'adorer » de la fiche du coloris (dashboard, avec ses photos) ;
+  // null = texte intégré du modèle (lib/comfort.ts).
+  comfort: jsonb("comfort").$type<ComfortContent>(),
 }, (table) => [
   index("variants_product_idx").on(table.productId),
   check("variants_price_positive", sql`${table.price} > 0`),

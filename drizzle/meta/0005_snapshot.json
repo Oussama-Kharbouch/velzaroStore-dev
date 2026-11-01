@@ -1,5 +1,5 @@
 {
-  "id": "c0fff42f-c2d0-4495-a6fd-a8e900d09efa",
+  "id": "e36f379b-4d13-4894-8503-d7c56f2f1ae1",
   "prevId": "855a0b01-f0d2-4560-a87e-9baf9f5d249c",
   "version": "7",
   "dialect": "postgresql",
@@ -599,12 +599,6 @@
           "notNull": true,
           "default": true
         },
-        "comfort": {
-          "name": "comfort",
-          "type": "jsonb",
-          "primaryKey": false,
-          "notNull": false
-        },
         "created_at": {
           "name": "created_at",
           "type": "timestamp with time zone",
@@ -833,6 +827,12 @@
         "thumbnail": {
           "name": "thumbnail",
           "type": "text",
+          "primaryKey": false,
+          "notNull": false
+        },
+        "comfort": {
+          "name": "comfort",
+          "type": "jsonb",
           "primaryKey": false,
           "notNull": false
         }

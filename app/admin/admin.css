@@ -1030,3 +1030,5 @@ body:has(.ad) { margin: 0; }
   .vz-promo-dates, .vz-comfort-pair, .vz-comfort-card-body { grid-template-columns: minmax(0, 1fr); }
   .vz-comfort-preview { max-width: 220px; }
 }
+.vz-comfort-panel { margin-top: 18px; }
+.vz-comfort-all { padding: 10px 12px; border-radius: 10px; background: var(--ad-shell); font-weight: 600; }

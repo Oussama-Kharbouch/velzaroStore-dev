@@ -20,19 +20,20 @@ function Pair({ label, value, onChange, max, area }: { label: string; value: Bil
 }
 
 /**
- * « Pourquoi vous allez l'adorer » section of a model: shown or not, its title, and 1 to 6 cards
- * (photo number of the colourway, framing, title and text in both languages). The photos shown
- * here are those of the model's first colourway; every colourway uses its own photo of that number.
+ * « Pourquoi vous allez l'adorer » section of a colourway: shown or not, its title, and 1 to 6 cards
+ * (one of its photos, framing, title and text in both languages). The same cards can be copied to
+ * every colourway of the model: each one then shows its own photo of the chosen number.
  */
-export default function ComfortEditor({ id, content, photos }: { id: number; content: ComfortContent; photos: string[] }) {
+export default function ComfortEditor({ variantId, modelName, colourways, content, photos }: { variantId: number; modelName: string; colourways: number; content: ComfortContent; photos: string[] }) {
   const router = useRouter();
   const lock = useRef(false);
   const [value, setValue] = useState<ComfortContent>(content);
   const [sending, setSending] = useState(false);
   const [refreshing, startRefresh] = useTransition();
   const [message, setMessage] = useState<{ tone: "error" | "success"; text: string } | null>(null);
+  const [allColourways, setAllColourways] = useState(false);
   const busy = sending || refreshing;
-  const dirty = JSON.stringify(value) !== JSON.stringify(content);
+  const dirty = JSON.stringify(value) !== JSON.stringify(content) || allColourways;
 
   const change = (next: ComfortContent) => { setValue(next); setMessage(null); };
   const setCard = (i: number, card: ComfortCard) => change({ ...value, cards: value.cards.map((c, j) => (j === i ? card : c)) });
@@ -49,14 +50,15 @@ export default function ComfortEditor({ id, content, photos }: { id: number; con
     setSending(true);
     setMessage(null);
     try {
-      const response = await fetch(`/api/admin/products/${id}`, {
-        method: "PATCH", headers: { "content-type": "application/json" }, body: JSON.stringify({ comfort: value }),
+      const response = await fetch(`/api/admin/variants/${variantId}/comfort`, {
+        method: "PUT", headers: { "content-type": "application/json" }, body: JSON.stringify({ comfort: value, allColourways }),
       });
       const data = (await response.json().catch(() => ({
         ok: false, erreur: response.status === 401 ? "Session expirée : reconnectez-vous." : `Le serveur a répondu ${response.status}.`,
-      }))) as { ok: boolean; erreur?: string };
+      }))) as { ok: boolean; erreur?: string; count?: number };
       if (data.ok) {
-        setMessage({ tone: "success", text: "Section enregistrée. Les fiches de ce modèle sont à jour." });
+        setMessage({ tone: "success", text: (data.count ?? 1) > 1 ? `Section enregistrée sur les ${data.count} coloris de ${modelName}.` : "Section enregistrée. La fiche de ce coloris est à jour." });
+        setAllColourways(false);
         startRefresh(() => router.refresh());
       } else setMessage({ tone: "error", text: data.erreur ?? "Enregistrement impossible." });
     } catch {
@@ -70,7 +72,7 @@ export default function ComfortEditor({ id, content, photos }: { id: number; con
   return (
     <form className="vz-comfort-editor" onSubmit={(e) => { e.preventDefault(); if (dirty) save(); }}>
       <label className="vz-promo-check vz-comfort-toggle">
-        <input type="checkbox" checked={value.enabled} onChange={(e) => change({ ...value, enabled: e.target.checked })}/> Afficher cette section sur les fiches de ce modèle
+        <input type="checkbox" checked={value.enabled} onChange={(e) => change({ ...value, enabled: e.target.checked })}/> Afficher cette section sur la fiche de ce coloris
       </label>
 
       <fieldset className="vz-promo-block" disabled={!value.enabled}>
@@ -106,7 +108,10 @@ export default function ComfortEditor({ id, content, photos }: { id: number; con
         </fieldset>
       ))}
 
-      <p className="vz-promo-hint">Chaque coloris affiche sa propre photo du numéro choisi (sa 1re photo s’il en a moins). Une langue laissée vide affiche l’autre.</p>
+      <p className="vz-promo-hint">Les photos sont celles de ce coloris (ajoutées plus haut). Une langue laissée vide affiche l’autre.</p>
+      {colourways > 1 && <label className="vz-promo-check vz-comfort-all">
+        <input type="checkbox" checked={allColourways} onChange={(e) => { setAllColourways(e.target.checked); setMessage(null); }}/> Utiliser ces cartes pour les {colourways} coloris de {modelName} (chacun avec sa propre photo du même numéro)
+      </label>}
       <div className="vz-promo-actions">
         <button type="button" className="ad-btn" disabled={!value.enabled || value.cards.length >= COMFORT_CARDS_MAX} onClick={() => change({ ...value, cards: [...value.cards, { ...empty }] })}><Plus aria-hidden="true"/> Ajouter une carte</button>
         <button type="button" className="ad-btn" onClick={() => change({ ...DEFAULT_COMFORT, enabled: value.enabled })}><RotateCcw aria-hidden="true"/> Remettre le texte d’origine</button>

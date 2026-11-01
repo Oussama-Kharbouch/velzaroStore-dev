@@ -41,7 +41,7 @@ export type StoreProduct = {
   photoKeys: string[];
   /** Colourway thumbnail of the product page: the one chosen in the dashboard, or its first photo. */
   thumbnail: string;
-  /** "Why you will like it" section of its model (dashboard, or built-in wording). */
+  /** "Why you will like it" section of the colourway (dashboard, with its photos), or the built-in wording of its model. */
   comfort: ComfortContent;
 };
 
@@ -111,12 +111,12 @@ export async function getStoreCatalog(): Promise<StoreProduct[]> {
         .groupBy(orderItems.variantId),
     ]);
     const soldBy = new Map(sales.map((s) => [s.variantId, Number(s.sold)]));
-    // Section written in the dashboard, per model. Read apart: if it fails (column not created yet),
+    // Section written in the dashboard, per colourway. Read apart: if it fails (column not created yet),
     // the shop keeps its built-in wording instead of falling back to the built-in catalogue.
-    let savedComfort = new Map<string, ComfortContent | null>();
+    let savedComfort = new Map<number, ComfortContent | null>();
     try {
-      const models = await db.select({ slug: products.slug, comfort: products.comfort }).from(products);
-      savedComfort = new Map(models.map((m) => [m.slug, m.comfort]));
+      const saved = await db.select({ id: variants.id, comfort: variants.comfort }).from(variants).where(inArray(variants.id, ids));
+      savedComfort = new Map(saved.map((v) => [v.id, v.comfort]));
     } catch (error) {
       console.error("Section « Pourquoi vous allez l'adorer » illisible, texte intégré utilisé :", error);
     }
@@ -135,7 +135,7 @@ export async function getStoreCatalog(): Promise<StoreProduct[]> {
       promotion: extra.get(r.slug)?.promotion ?? false,
       gender: r.gender,
       sold: soldBy.get(r.id) ?? 0,
-      comfort: resolveComfort(savedComfort.get(r.modelSlug) ?? null, productContent(r.modelSlug).comfort),
+      comfort: resolveComfort(savedComfort.get(r.id) ?? null, productContent(r.modelSlug).comfort),
       price: r.price,
       oldPrice: r.oldPrice !== null && r.oldPrice > r.price ? r.oldPrice : null,
       sizes: sizes.filter((s) => s.variantId === r.id).map((s) => ({ size: s.size, available: s.stock === null || s.stock > 0 })),

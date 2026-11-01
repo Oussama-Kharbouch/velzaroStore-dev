@@ -1,10 +1,11 @@
 /**
- * "Why you will like it" section of the product page, per model: title, and photo cards with a
- * title and a short text in Arabic and French. Written in the dashboard (model page, stored in
- * products.comfort); a model never edited keeps the built-in wording of lib/product-content.ts.
+ * "Why you will like it" section of the product page, per colourway: title, and photo cards with a
+ * title and a short text in Arabic and French. Written in the dashboard (colourway page, under its
+ * photos; stored in variants.comfort); a colourway never edited keeps the built-in wording of its
+ * model (lib/product-content.ts).
  *
- * A card shows one photo of the colourway being viewed (its number in the gallery), so each
- * colourway keeps its own pictures with the same wording.
+ * A card shows one photo of the colourway (its number in the gallery); when the same cards are
+ * copied to every colourway of a model, each one shows its own photo of that number.
  */
 export type Bilingual = { ar: string; fr: string };
 

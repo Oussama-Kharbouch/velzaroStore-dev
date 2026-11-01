@@ -246,19 +246,36 @@ const comfortSchema = z.object({
 });
 
 /**
- * Name, brand and/or « Pourquoi vous allez l'adorer » section of a model.
- * Body: { name?, brand?, comfort? } — empty brand = no brand.
+ * « Pourquoi vous allez l'adorer » section of a colourway (its own photos).
+ * Body: { comfort, allColourways? } — allColourways copies the same cards to every colourway of its
+ * model (each one shows its own photo of the chosen number).
+ */
+export const saveVariantComfort = async (id: number, payload: unknown): Promise<Result<{ id: number; count: number }>> => {
+  const parsed = z.object({ comfort: comfortSchema, allColourways: z.boolean().optional() }).safeParse(payload);
+  if (!parsed.success) return firstIssue(parsed.error);
+  const { comfort, allColourways } = parsed.data;
+  return inTransaction(async (tx) => {
+    const [variant] = await tx.select({ productId: variants.productId }).from(variants).where(eq(variants.id, id)).limit(1);
+    if (!variant) return ko("Ce coloris n'existe pas.");
+    const updated = await tx.update(variants).set({ comfort })
+      .where(allColourways ? eq(variants.productId, variant.productId) : eq(variants.id, id)).returning({ id: variants.id });
+    return ok({ id, count: updated.length });
+  });
+};
+
+/**
+ * Name and/or brand of a model.
+ * Body: { name?, brand? } — empty brand = no brand.
  * The slug (address /<model>/<colourway>, Meta catalogue ids) never changes: shared links keep working.
  */
 export const updateModel = async (id: number, payload: unknown): Promise<Result<{ id: number }>> => {
   const parsed = z.object({
     name: z.string().trim().min(2, "Nom du modèle : 2 caractères minimum.").max(60, "Nom du modèle : 60 caractères maximum.").optional(),
     brand: z.string().trim().max(40, "Marque : 40 caractères maximum.").optional(),
-    comfort: comfortSchema.optional(),
   }).safeParse(payload);
   if (!parsed.success) return firstIssue(parsed.error);
-  const { name, brand, comfort } = parsed.data;
-  if (name === undefined && brand === undefined && comfort === undefined) return ko("Rien à enregistrer.");
+  const { name, brand } = parsed.data;
+  if (name === undefined && brand === undefined) return ko("Rien à enregistrer.");
 
   return inTransaction(async (tx) => {
     if (name !== undefined) {
@@ -269,7 +286,6 @@ export const updateModel = async (id: number, payload: unknown): Promise<Result<
     const updated = await tx.update(products).set({
       ...(name !== undefined ? { name } : {}),
       ...(brand !== undefined ? { brand: brand || null } : {}),
-      ...(comfort !== undefined ? { comfort } : {}),
     }).where(eq(products.id, id)).returning({ id: products.id });
     return updated.length ? ok({ id }) : ko("Ce modèle n'existe pas.");
   });
